@@ -20,8 +20,8 @@ import com.dropbox.client2.android.AndroidAuthSession;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -38,8 +38,10 @@ public class MainActivity extends AppCompatActivity {
     private static TextView privateKeyText;
 
     private String UNIQUE_DEVICE_ID;
-    private String PUBLIC_KEY = "";
-    private String PRIVATE_KEY = "";
+    private PublicKey PUBLIC_KEY;
+    private PrivateKey PRIVATE_KEY;
+
+    private KeyGenerator keyGen;
 
     // Database for cloud storage encryption
     private static File databaseFile;
@@ -57,8 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
         UNIQUE_DEVICE_ID = getUniqueAndroidDeviceId();
 
-
-        startKeyDatabase();
+        generateAsymetricKeys();
         instantiateButtons();
         instantiateTextViews();
 
@@ -68,25 +69,16 @@ public class MainActivity extends AppCompatActivity {
         Log.d("Giggle_onCreate", "Init finished");
     }
 
-    public void startKeyDatabase() {
-        keyDatabase = openOrCreateDatabase("KeyPair", MODE_PRIVATE, null);
-        Log.d("startKeyDatabase", "Start or create databse");
-        keyDatabase.execSQL(
-                "CREATE TABLE IF NOT EXISTS Keys (" +
-                        "UserID Char(50) PRIMARY KEY," +
-                        "PublicKey Char(50)," +
-                        "PrivateKey Char(50)" +
-                        ");");
-
-        keyDatabase.execSQL("DROP TABLE Keys;");
-
-        keyDatabase.execSQL(
-                "CREATE TABLE IF NOT EXISTS Keys (" +
-                        "UserID Char(50) PRIMARY KEY," +
-                        "PublicKey Char(50)," +
-                        "PrivateKey Char(50)" +
-                        ");");
-        Log.d("startKeyDatabase", "Table created");
+    public void generateAsymetricKeys() {
+        keyGen = new KeyGenerator(this);
+        if (keyGen.getPublicKeyAsString() == null) {
+            keyGen.generateKeys();
+            Log.d("generateAsymetricKeys", "New keys generated");
+        }
+        PUBLIC_KEY = keyGen.getPublicKey();
+        PRIVATE_KEY = keyGen.getPrivateKey();
+        Log.d("generateAsymetricKeys", "Public Key: " + keyGen.getPublicKeyAsString());
+        Log.d("generateAsymetricKeys", "Private Key: " + keyGen.getPrivateKeyAsString());
     }
 
 
@@ -125,27 +117,19 @@ public class MainActivity extends AppCompatActivity {
      */
     public void instantiateTextViews() {
         uniqueDeviceId = (TextView) findViewById(R.id.unique_device_id);
-        publicKeyText = (TextView) findViewById(R.id.public_key_value);
-        privateKeyText = (TextView) findViewById(R.id.private_key_value);
+        publicKeyText = (TextView) findViewById(R.id.public_key);
+        privateKeyText = (TextView) findViewById(R.id.private_key);
+
+        Resources res = getResources();
 
         assert uniqueDeviceId != null;
-        Resources res = getResources();
-        String text = res.getString(R.string.device_id_string, UNIQUE_DEVICE_ID);
-        uniqueDeviceId.setText(text);
-
-        Cursor resultSet = keyDatabase.rawQuery(
-                "SELECT * FROM Keys", null);
-
-        if (resultSet.getCount() > 0) {
-            resultSet.moveToFirst();
-            assert publicKeyText != null;
-            publicKeyText.setText(resultSet.getString(1).substring(0, 10));
-            assert privateKeyText != null;
-            privateKeyText.setText(resultSet.getString(2).substring(0, 10));
-        }
-        resultSet.close();
-        resultSet.close();
-
+        uniqueDeviceId.setText(res.getString(R.string.device_id_string, UNIQUE_DEVICE_ID));
+        assert publicKeyText != null;
+        publicKeyText.setText(res.getString(R.string.public_key_string,
+                keyGen.getPublicKeyAsString().substring(0, 30)));
+        assert privateKeyText != null;
+        privateKeyText.setText(res.getString(R.string.private_key_string,
+                keyGen.getPrivateKeyAsString().substring(0, 30)));
         Log.d("instantiateTextViews", "Text views created");
     }
 
@@ -217,75 +201,27 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
-    public void generateKeys() {
-        Cursor resultSet = keyDatabase.rawQuery(
-                "SELECT * FROM Keys", null);
-        if (resultSet.getCount() < 1) {
-            // if user does not have key pair
-            Log.d("generateKeys", "Device does not have keys");
-            try {
-                KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-                kpg.initialize(2048);
-                KeyPair keyPair = kpg.genKeyPair();
-                byte[] pri = keyPair.getPrivate().getEncoded();
-                byte[] pub = keyPair.getPublic().getEncoded();
-                PUBLIC_KEY = stringFromBytesArray(pub);
-                PRIVATE_KEY = stringFromBytesArray(pri);
-                assert publicKeyText != null;
-                publicKeyText.setText(PUBLIC_KEY.substring(0, 10));
-                assert privateKeyText != null;
-                privateKeyText.setText(PRIVATE_KEY.substring(0, 10));
-                keyDatabase.execSQL(
-                        "INSERT INTO Keys VALUES(" +
-                                "'" + UNIQUE_DEVICE_ID + "'," +
-                                "'" + stringFromBytesArray(pub) + "'," +
-                                "'" + stringFromBytesArray(pri) + ";");
-                Log.d("generateKeys", "Keys generated for device");
-            } catch (Exception e) {
-                Log.d("generateKeys", "Exception " + e.toString(), e);
-            }
-        } else {
-            publicKeyText.setText(resultSet.getString(1).substring(0, 10));
-            privateKeyText.setText(resultSet.getString(2).substring(0, 10));
-        }
-
-
-        Log.d("generateKeys", "PuK: " + PUBLIC_KEY);
-        Log.d("generateKeys", "PrK: " + PRIVATE_KEY);
-        resultSet.close();
-    }
-
-    public String stringFromBytesArray(byte[] arr) {
-        String s = "";
-        Log.d("stringFromBytesArray", "Arr length: " + arr.length);
-        for (byte b : arr) {
-            s += (char) b;
-        }
-        Log.d("stringFromBytesArray", "Returning " + s);
-        return s;
-    }
-
     public boolean addDeviceToUserGroup() {
-        DATA_BASE.execSQL("CREATE TABLE IF NOT EXISTS UserAccounts (" +
-                "   UniqueDeviceId Char(50) PRIMARY KEY," +
-                "   UserPublicKey Char(50)" +
-                ");");
         Cursor resultSet = DATA_BASE.rawQuery(
                 "SELECT UniqueDeviceId FROM UserAccounts", null);
-
-        resultSet.moveToFirst();
-        while (!resultSet.isAfterLast()) {
-            // if the UNIQUE_DEVICE_ID is already in the table then return
-            if (resultSet.getString(0).equals(UNIQUE_DEVICE_ID)) {
-                resultSet.close();
-                return true;
+        if (resultSet.getCount() > 0) {
+            Log.d("addDeviceToUserGroup", "More than 0 rows in table");
+            resultSet.moveToFirst();
+            while (!resultSet.isAfterLast()) {
+                // if the UNIQUE_DEVICE_ID is already in the table then return
+                if (resultSet.getString(0).equals(UNIQUE_DEVICE_ID)) {
+                    Log.d("addDeviceToUserGroup", "User already in table");
+                    resultSet.close();
+                    return true;
+                }
+                resultSet.moveToNext();
             }
-            resultSet.moveToNext();
         }
         DATA_BASE.execSQL("INSERT INTO UserAccounts VALUES(" +
                 "'" + UNIQUE_DEVICE_ID + "'," +
-                "'" + PUBLIC_KEY + "');");
-        Log.d("addDeviceToUserGroup", "Added " + UNIQUE_DEVICE_ID + " : " + PUBLIC_KEY);
+                "'" + keyGen.getPublicKeyAsString() + "');");
+        Log.d("addDeviceToUserGroup",
+                "Added " + UNIQUE_DEVICE_ID + " : " + keyGen.getPublicKeyAsString());
         resultSet.close();
         return false;
     }
@@ -294,7 +230,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case REQUEST_CODE_CON_TO_DROPBOX:
-                Log.d("Giggle_onActivityResult", "" + mDBApi.getSession().authenticationSuccessful());
+                Log.d("Giggle_onActivityResult",
+                        "" + mDBApi.getSession().authenticationSuccessful());
                 Log.d("Giggle_onActivityResult", mDBApi.getSession().getOAuth2AccessToken());
                 AsyncTask.execute(new Runnable() {
                     @Override
@@ -302,16 +239,18 @@ public class MainActivity extends AppCompatActivity {
                         databaseFile = getAppDatabase();
                         Log.d("Giggle_onActivityResult", "Name: " + databaseFile.getName());
                         Log.d("Giggle_onActivityResult", "Path: " + databaseFile.getPath());
-                        DATA_BASE = openOrCreateDatabase(databaseFile.getPath(), MODE_PRIVATE, null);
+                        DATA_BASE = openOrCreateDatabase(databaseFile.getPath(),
+                                MODE_PRIVATE, null);
                     }
                 });
                 try {
-                    generateKeys();
                     while (DATA_BASE == null) {
                         Log.d("Giggle_onActivityResult", "Waiting");
                         Thread.sleep(250);
                     }
                     boolean wasInGroup = addDeviceToUserGroup();
+                    DATA_BASE.close();
+                    Log.d("Giggle_onActivityResult", "Was in Group: " + wasInGroup);
                     if (!wasInGroup) {
                         AsyncTask.execute(new Runnable() {
                             @Override
@@ -322,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
                 } catch (Exception e) {
-                    Log.d("Giggle_onActivityResult", "Exception " + e.toString(), e);
+                    Log.e("Giggle_onActivityResult", "Exception " + e.toString(), e);
                 }
         }
     }

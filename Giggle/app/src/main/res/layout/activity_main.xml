@@ -38,7 +38,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/public_key_field"
+        android:text="@string/public_key_string"
         android:id="@+id/public_key"
         android:layout_marginBottom="52dp"
         android:layout_above="@+id/private_key"
@@ -49,38 +49,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/private_key_field"
+        android:text="@string/private_key_string"
         android:id="@+id/private_key"
         android:layout_centerVertical="true"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:id="@+id/public_key_value"
-        android:layout_alignBottom="@+id/public_key"
-        android:layout_toRightOf="@+id/public_key"
-        android:layout_toEndOf="@+id/public_key"
-        android:layout_marginLeft="33dp"
-        android:layout_marginStart="33dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:id="@+id/private_key_value"
-        android:layout_alignTop="@+id/private_key"
-        android:layout_alignLeft="@+id/public_key_value"
-        android:layout_alignStart="@+id/public_key_value" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/encrypt_button_string"
         android:id="@+id/encrypt_button"
-        android:layout_alignTop="@+id/decrpyt_button"
+        android:layout_above="@+id/decrpyt_button"
         android:layout_alignLeft="@+id/public_key"
         android:layout_alignStart="@+id/public_key" />
 
@@ -89,9 +67,9 @@
         android:layout_height="wrap_content"
         android:text="@string/decrypt_button_string"
         android:id="@+id/decrpyt_button"
+        android:layout_marginBottom="31dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignLeft="@+id/private_key_value"
-        android:layout_alignStart="@+id/private_key_value"
-        android:layout_marginBottom="31dp" />
+        android:layout_alignLeft="@+id/encrypt_button"
+        android:layout_alignStart="@+id/encrypt_button" />
 
 </RelativeLayout>

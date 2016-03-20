@@ -13,6 +13,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 public class KeyGenerator extends Activity{
@@ -72,7 +73,7 @@ public class KeyGenerator extends Activity{
     public PrivateKey getPrivateKey(){
         String privKeyStr = SP.getString("PrivateKey", "");
         byte[] sigBytes = Base64.decode(privKeyStr, Base64.DEFAULT);
-        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(sigBytes);
+        PKCS8EncodedKeySpec PKCS8EncodedKey = new PKCS8EncodedKeySpec(sigBytes);
         KeyFactory keyFact = null;
         try {
             keyFact = KeyFactory.getInstance("RSA", "BC");
@@ -81,9 +82,9 @@ public class KeyGenerator extends Activity{
         }
         try {
             assert keyFact != null;
-            return keyFact.generatePrivate(x509KeySpec);
-        } catch (InvalidKeySpecException e) {
-            e.printStackTrace();
+            return keyFact.generatePrivate(PKCS8EncodedKey);
+        } catch (Exception e) {
+            Log.e("getPrivateKey", "Exception: " + e.toString(), e);
         }
         return null;
     }

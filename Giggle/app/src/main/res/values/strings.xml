@@ -5,8 +5,8 @@
     <!-- Main Activity Strings -->
     <string name="welcome_string">Securing The Cloud</string>
     <string name="device_id_string">Your device ID: %1$s</string>
-    <string name="public_key_field">Your Public Key:</string>
-    <string name="private_key_field">Your Private Key:</string>
+    <string name="public_key_string">Your Public Key: %1$s</string>
+    <string name="private_key_string">Your Private Key: %1$s</string>
     <string name="encrypt_button_string">Encrypt</string>
     <string name="decrypt_button_string">Decrypt</string>
 </resources>
