@@ -30,3 +30,6 @@ proguard/
 
 # Android Studio captures folder
 captures/
+
+# Dropbox connection constants
+SecretConstants.java
