@@ -1,7 +1,9 @@
 package tomas.giggle;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -13,29 +15,58 @@ import android.widget.TextView;
 
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
-import com.dropbox.client2.session.AppKeyPair;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String APP_KEY = SecretConstants.APP_KEY;
-    private static final String APP_SECRET = SecretConstants.APP_SECRET;
+    public static DropboxAPI<AndroidAuthSession> mDBApi;
 
-    // In the class declaration section:
-    private DropboxAPI<AndroidAuthSession> mDBApi;
+    // Buttons in the Main Activity
+    private static Button encryptButton;
+    private static Button decryptButton;
+
+    // Text fields in the Main Activity
+    private static TextView uniqueDeviceId;
+    private static TextView publicKeyText;
+    private static TextView privateKeyText;
+
+    private String UNIQUE_DEVICE_ID;
+
+    // Database for cloud storage encryption
+    private static SQLiteDatabase DATA_BASE;
+
+    public static final int REQUEST_CODE_CON_TO_DROPBOX = 1000;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button encryptButton = (Button) findViewById(R.id.encrypt_button);
-        Button decryptButton = (Button) findViewById(R.id.decrpyt_button);
+        UNIQUE_DEVICE_ID = getUniqueAndroidDeviceId();
+        instantiateButtons();
+        instantiateTextViews();
 
-        assert encryptButton !=  null;
+        startActivityForResult(
+                new Intent(this, ConnectToDropBoxActivity.class), REQUEST_CODE_CON_TO_DROPBOX);
+        Log.d("Giggle_onCreate", "Init finished");
+    }
+
+
+    /**
+     * instantiateButtons
+     * <p/>
+     * Connect to and set up listeners and handlers for buttons in the Main Activity
+     */
+    public void instantiateButtons() {
+        encryptButton = (Button) findViewById(R.id.encrypt_button);
+        decryptButton = (Button) findViewById(R.id.decrpyt_button);
+
+        assert encryptButton != null;
         encryptButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -50,83 +81,114 @@ public class MainActivity extends AppCompatActivity {
                 // TODO
             }
         });
-        Log.d("Giggle_onCreate", "Buttons and listeners created");
+        Log.d("instantiateButtons", "Buttons and listeners created");
+    }
 
+
+    /**
+     * instantiateTextViews
+     * <p/>
+     * Connect and populate text views for the Main Activity
+     */
+    public void instantiateTextViews() {
         TextView uniqueDeviceId = (TextView) findViewById(R.id.unique_device_id);
         TextView publicKeyText = (TextView) findViewById(R.id.public_key_value);
         TextView privateKeyText = (TextView) findViewById(R.id.private_key_value);
 
         assert uniqueDeviceId != null;
         Resources res = getResources();
-        String text = res.getString(R.string.device_id_string, getUniqueAndroidDeviceId());
+        String text = res.getString(R.string.device_id_string, UNIQUE_DEVICE_ID);
         uniqueDeviceId.setText(text);
-        Log.d("Giggle_onCreate", "Text views created");
-
-
-        // And later in some initialization function:
-        AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
-        AndroidAuthSession session = new AndroidAuthSession(appKeys);
-        mDBApi = new DropboxAPI<AndroidAuthSession>(session);
-        Log.d("Giggle_onCreate", "mDBApi created");
-
-
-        // MainActivity below should be your activity class name
-        mDBApi.getSession().startOAuth2Authentication(MainActivity.this);
-        Log.d("Giggle_onCreate", "mDBApi getSession started");
+        Log.d("instantiateTextViews", "Text views created");
     }
 
+
+    /**
+     * getUniqueAndroidDeviceId
+     * <p/>
+     * Calculate the unique device ID and return it
+     *
+     * @return a String representing a unique ID for the device
+     */
     public String getUniqueAndroidDeviceId() {
         TelephonyManager tm =
                 (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);
-        Log.d("Giggle_getUniqueAndroid", "tm created");
+        Log.d("getUniqueAndroidDevice", "tm created");
         String tmDevice, tmSerial, androidId;
         tmDevice = "" + tm.getDeviceId();
         tmSerial = "" + tm.getSimSerialNumber();
         androidId = "" + android.provider.Settings.Secure.getString(getContentResolver(),
                 android.provider.Settings.Secure.ANDROID_ID);
-        Log.d("Giggle_getUniqueAndroid", "strings created");
+        Log.d("getUniqueAndroidDevice", "strings created");
 
         UUID deviceUuid = new UUID(androidId.hashCode(),
-                ((long)tmDevice.hashCode() << 32) | tmSerial.hashCode());
+                ((long) tmDevice.hashCode() << 32) | tmSerial.hashCode());
         Log.d("Giggle_getUniqueAndroid", "UUID created");
         return deviceUuid.toString();
     }
 
-    public void addFile() {
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    File file = File.createTempFile("working-draft", "txt");
-                    file.deleteOnExit();
-                    FileInputStream inputStream = new FileInputStream(file);
-                    DropboxAPI.Entry response = mDBApi.putFile("/magnum-opus.txt", inputStream,
-                            file.length(), null, null);
-                    Log.d("Giggle_addFile", "The uploaded file's rev is: " + response.rev);
-                } catch (Exception e) {
-                    Log.e("Giggle_addFile", "IOException", e);
-                }
-            }
-        });
-    }
 
-
-    protected void onResume() {
-        super.onResume();
-
-        if (mDBApi.getSession().authenticationSuccessful()) {
-            try {
-                // Required to complete auth, sets the access token on the session
-                // The finishAuthentication() method will bind the user's access token to the
-                // session. You'll now be able to retrieve it via
-                // mDBApi.getSession().getOAuth2AccessToken().
-                mDBApi.getSession().finishAuthentication();
-
-                String accessToken = mDBApi.getSession().getOAuth2AccessToken();
-            } catch (IllegalStateException e) {
-                Log.d("Giggle_onResume", "Error authenticating", e);
-            }
+    /**
+     * addFileToDropBox
+     * <p/>
+     * Add a file to DropBox. Files are added to the root folder for the moment.
+     * Note: Run this method in a background task
+     *
+     * @param file: the file to add to DropBox
+     */
+    public void addFileToDropBox(File file) {
+        try {
+            FileInputStream inputStream = new FileInputStream(file);
+            DropboxAPI.Entry response = mDBApi.putFile(file.getName(), inputStream,
+                    file.length(), null, null);
+            Log.d("addFileToDropBox", "The uploaded file's rev is: " + response.rev);
+        } catch (Exception e) {
+            Log.e("addFileToDropBox", "IOException", e);
         }
     }
 
+
+    /**
+     * getAppDatabase
+     * <p/>
+     * Download the most up to date version of the Securing The Cloud database.
+     * Note: Run this method in a background task
+     *
+     * @return a file object containing the updated database
+     */
+    public File getAppDatabase() {
+        try {
+            File file = File.createTempFile(SecretConstants.DATABASE_NAME, "");
+            Log.d("getAppDatabase", "File name: " + file.getName());
+            String fileName =
+                    file.getName().substring(0, SecretConstants.DATABASE_NAME.length() - 1);
+            file.deleteOnExit();
+            Log.d("getAppDatabase", "File name: " + fileName);
+            FileOutputStream outputStream = new FileOutputStream(file);
+            DropboxAPI.DropboxFileInfo info =
+                    mDBApi.getFile(fileName, null, outputStream, null);
+            Log.d("getAppDatabase", "The file's rev is: " + info.getMetadata().rev);
+            return file;
+        } catch (Exception e) {
+            Log.e("getAppDatabase", e.toString(), e);
+        }
+        return null;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_CON_TO_DROPBOX:
+                Log.d("Giggle_onActivityResult", "" + mDBApi.getSession().authenticationSuccessful());
+                Log.d("Giggle_onActivityResult", mDBApi.getSession().getOAuth2AccessToken());
+                AsyncTask.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        File file = getAppDatabase();
+                        Log.d("Giggle_onActivityResult", "Name: " + file.getName());
+                        Log.d("Giggle_onActivityResult", "Path: " + file.getPath());
+                    }
+                });
+        }
+    }
 }
