@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
@@ -27,31 +28,39 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button b = (Button) findViewById(R.id.createFileButton);
+        Button encryptButton = (Button) findViewById(R.id.encrypt_button);
+        Button decryptButton = (Button) findViewById(R.id.decrpyt_button);
 
-        Log.d("Giggle_onCreate", "Button b created");
+        encryptButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO
+            }
+        });
+
+        decryptButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO
+            }
+        });
+        Log.d("Giggle_onCreate", "Buttons and listeners created");
+
+        TextView publicKeyText = (TextView) findViewById(R.id.public_key_value);
+        TextView privateKeyText = (TextView) findViewById(R.id.private_key_value);
+        Log.d("Giggle_onCreate", "Text views created");
+
 
         // And later in some initialization function:
         AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
         AndroidAuthSession session = new AndroidAuthSession(appKeys);
         mDBApi = new DropboxAPI<AndroidAuthSession>(session);
-
         Log.d("Giggle_onCreate", "mDBApi created");
 
 
         // MainActivity below should be your activity class name
         mDBApi.getSession().startOAuth2Authentication(MainActivity.this);
-
         Log.d("Giggle_onCreate", "mDBApi getSession started");
-
-        b.setOnClickListener(new View.OnClickListener()  {
-            @Override
-            public void onClick(View v) {
-                addFile();
-            }
-        });
-
-        Log.d("Giggle_onCreate", "b click listener started");
     }
 
     public void addFile() {

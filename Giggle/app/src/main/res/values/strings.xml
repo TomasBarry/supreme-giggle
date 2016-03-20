@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">Giggle</string>
     <string name="action_settings">Settings</string>
+
+    <!-- Main Activity Strings -->
+    <string name="welcome_string">Securing The Cloud</string>
+    <string name="public_key_field">Your Public Key:</string>
+    <string name="private_key_field">Your Private Key:</string>
+    <string name="encrypt_button_string">Encrypt</string>
+    <string name="decrypt_button_string">Decrypt</string>
 </resources>
