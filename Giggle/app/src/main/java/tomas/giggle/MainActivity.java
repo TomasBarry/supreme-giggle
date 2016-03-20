@@ -1,8 +1,11 @@
 package tomas.giggle;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -14,6 +17,7 @@ import com.dropbox.client2.session.AppKeyPair;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
         Button encryptButton = (Button) findViewById(R.id.encrypt_button);
         Button decryptButton = (Button) findViewById(R.id.decrpyt_button);
 
+        assert encryptButton !=  null;
         encryptButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -38,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        assert decryptButton != null;
         decryptButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -46,8 +52,14 @@ public class MainActivity extends AppCompatActivity {
         });
         Log.d("Giggle_onCreate", "Buttons and listeners created");
 
+        TextView uniqueDeviceId = (TextView) findViewById(R.id.unique_device_id);
         TextView publicKeyText = (TextView) findViewById(R.id.public_key_value);
         TextView privateKeyText = (TextView) findViewById(R.id.private_key_value);
+
+        assert uniqueDeviceId != null;
+        Resources res = getResources();
+        String text = res.getString(R.string.device_id_string, getUniqueAndroidDeviceId());
+        uniqueDeviceId.setText(text);
         Log.d("Giggle_onCreate", "Text views created");
 
 
@@ -61,6 +73,23 @@ public class MainActivity extends AppCompatActivity {
         // MainActivity below should be your activity class name
         mDBApi.getSession().startOAuth2Authentication(MainActivity.this);
         Log.d("Giggle_onCreate", "mDBApi getSession started");
+    }
+
+    public String getUniqueAndroidDeviceId() {
+        TelephonyManager tm =
+                (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);
+        Log.d("Giggle_getUniqueAndroid", "tm created");
+        String tmDevice, tmSerial, androidId;
+        tmDevice = "" + tm.getDeviceId();
+        tmSerial = "" + tm.getSimSerialNumber();
+        androidId = "" + android.provider.Settings.Secure.getString(getContentResolver(),
+                android.provider.Settings.Secure.ANDROID_ID);
+        Log.d("Giggle_getUniqueAndroid", "strings created");
+
+        UUID deviceUuid = new UUID(androidId.hashCode(),
+                ((long)tmDevice.hashCode() << 32) | tmSerial.hashCode());
+        Log.d("Giggle_getUniqueAndroid", "UUID created");
+        return deviceUuid.toString();
     }
 
     public void addFile() {
