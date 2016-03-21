@@ -9,10 +9,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.dropbox.client2.DropboxAPI;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.util.ArrayList;
 
 /**
@@ -24,6 +29,10 @@ public class FileBrowserActivity extends AppCompatActivity {
     private String[] fileNames = null;
     ArrayList<DropboxAPI.Entry> dropboxFiles;
     AlertDialog.Builder builder;
+    Button uploadButton;
+    String selectedFileString;
+    File selectedFile = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +42,7 @@ public class FileBrowserActivity extends AppCompatActivity {
         setUpFilesView();
         initList();
         initBuilder();
+        initButton();
 
     }
 
@@ -44,6 +54,28 @@ public class FileBrowserActivity extends AppCompatActivity {
                     case DialogInterface.BUTTON_POSITIVE:
                         // Edit button
                         Log.i("initBuilder", "User wants to edit file");
+                        AsyncTask.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.i("initBuilder", "Downloading file: " + selectedFileString);
+                                selectedFile = downloadFile(selectedFileString);
+                            }
+                        });
+                        try {
+                            while (selectedFile == null) {
+                                Log.i("initBuilder", "Waiting");
+                                Thread.sleep(250);
+                            }
+                            BufferedReader br = new BufferedReader(new FileReader(selectedFile));
+                            String line = null;
+                            while ((line = br.readLine()) != null)
+                            {
+                                Log.i("initBuilder", line);
+                            }
+                        }
+                        catch (Exception e) {
+                            Log.e("initBuilder", "Exception: " + e.toString(), e);
+                        }
                         break;
 
                     case DialogInterface.BUTTON_NEGATIVE:
@@ -57,6 +89,22 @@ public class FileBrowserActivity extends AppCompatActivity {
         builder = new AlertDialog.Builder(FileBrowserActivity.this);
         builder.setMessage("What do you want to do?").setPositiveButton("Edit", dialogClickListener)
                 .setNegativeButton("Delete", dialogClickListener);
+    }
+
+    public File downloadFile(String fileName) {
+        File file = null;
+        try {
+            file = File.createTempFile(fileName, ".txt");
+            file.deleteOnExit();
+            FileOutputStream outputStream = new FileOutputStream(file);
+            DropboxAPI.DropboxFileInfo info =
+                    MainActivity.mDBApi.getFile(fileName, null, outputStream, null);
+            Log.i("downloadFile", "The file's rev is: " + info.getMetadata().rev);
+        }
+        catch (Exception e) {
+            Log.e("downloadFile", "Exception: " + e.toString(), e);
+        }
+        return file;
     }
 
     public String[] getFilesArray() {
@@ -78,6 +126,18 @@ public class FileBrowserActivity extends AppCompatActivity {
             Log.e("getFilesArray", "Exception: " + e.toString(), e);
         }
         return fnames;
+    }
+
+    public void initButton() {
+        uploadButton = (Button) findViewById(R.id.upload_button);
+        assert uploadButton != null;
+        uploadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO
+                Log.i("initButton", "User wants to upload a file");
+            }
+        });
     }
 
     public void setUpFilesView() {
@@ -114,6 +174,7 @@ public class FileBrowserActivity extends AppCompatActivity {
                     @Override
                     public void onItemClick(AdapterView<?> myAdapter, View myView, int myItemInt, long mylng) {
                         Log.i("initList", "File clicked: " + fileNames[myItemInt]);
+                        selectedFileString = fileNames[myItemInt];
                         builder.show();
                     }
                 }
