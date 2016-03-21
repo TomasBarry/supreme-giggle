@@ -39,6 +39,7 @@
         </activity>
 
         <activity android:name=".ConnectToDropBoxActivity" />
+        <activity android:name="FileBrowserActivity" />
     </application>
 
 </manifest>

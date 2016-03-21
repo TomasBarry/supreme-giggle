@@ -9,4 +9,6 @@
     <string name="private_key_string">Your Private Key: %1$s</string>
     <string name="encrypt_button_string">Encrypt</string>
     <string name="decrypt_button_string">Decrypt</string>
+    <string name="left_main_button_string">Users</string>
+    <string name="right_main_button_string">Files</string>
 </resources>

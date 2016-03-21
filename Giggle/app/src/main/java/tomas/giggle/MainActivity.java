@@ -29,8 +29,8 @@ public class MainActivity extends AppCompatActivity {
     public static DropboxAPI<AndroidAuthSession> mDBApi;
 
     // Buttons in the Main Activity
-    private static Button encryptButton;
-    private static Button decryptButton;
+    private static Button leftButton;
+    private static Button rightButton;
 
     // Text fields in the Main Activity
     private static TextView uniqueDeviceId;
@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private static SQLiteDatabase keyDatabase;
 
     public static final int REQUEST_CODE_CON_TO_DROPBOX = 1000;
+    public static final int FILE_BROWSER_REQUEST_CODE = 1001;
 
 
     @Override
@@ -66,19 +67,19 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(
                 new Intent(this, ConnectToDropBoxActivity.class), REQUEST_CODE_CON_TO_DROPBOX);
 
-        Log.d("Giggle_onCreate", "Init finished");
+        Log.i("Giggle_onCreate", "Init finished");
     }
 
     public void generateAsymetricKeys() {
         keyGen = new KeyGenerator(this);
         if (keyGen.getPublicKeyAsString() == null) {
             keyGen.generateKeys();
-            Log.d("generateAsymetricKeys", "New keys generated");
+            Log.i("generateAsymetricKeys", "New keys generated");
         }
         PUBLIC_KEY = keyGen.getPublicKey();
         PRIVATE_KEY = keyGen.getPrivateKey();
-        Log.d("generateAsymetricKeys", "Public Key: " + keyGen.getPublicKeyAsString());
-        Log.d("generateAsymetricKeys", "Private Key: " + keyGen.getPrivateKeyAsString());
+        Log.i("generateAsymetricKeys", "Public Key: " + keyGen.getPublicKeyAsString());
+        Log.i("generateAsymetricKeys", "Private Key: " + keyGen.getPrivateKeyAsString());
     }
 
 
@@ -88,25 +89,30 @@ public class MainActivity extends AppCompatActivity {
      * Connect to and set up listeners and handlers for buttons in the Main Activity
      */
     public void instantiateButtons() {
-        encryptButton = (Button) findViewById(R.id.encrypt_button);
-        decryptButton = (Button) findViewById(R.id.decrpyt_button);
+        leftButton = (Button) findViewById(R.id.left_button);
+        rightButton = (Button) findViewById(R.id.right_button);
 
-        assert encryptButton != null;
-        encryptButton.setOnClickListener(new View.OnClickListener() {
+        assert leftButton != null;
+        leftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // TODO
+                DATA_BASE = openOrCreateDatabase(databaseFile.getPath(),
+                        MODE_PRIVATE, null);
             }
         });
 
-        assert decryptButton != null;
-        decryptButton.setOnClickListener(new View.OnClickListener() {
+        assert rightButton != null;
+        rightButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO
+                DATA_BASE = openOrCreateDatabase(databaseFile.getPath(),
+                        MODE_PRIVATE, null);
+                startActivityForResult(new Intent(MainActivity.this, FileBrowserActivity.class),
+                        FILE_BROWSER_REQUEST_CODE);
             }
         });
-        Log.d("instantiateButtons", "Buttons and listeners created");
+        Log.i("instantiateButtons", "Buttons and listeners created");
     }
 
 
@@ -123,14 +129,15 @@ public class MainActivity extends AppCompatActivity {
         Resources res = getResources();
 
         assert uniqueDeviceId != null;
-        uniqueDeviceId.setText(res.getString(R.string.device_id_string, UNIQUE_DEVICE_ID));
+        uniqueDeviceId.setText(res.getString(R.string.device_id_string,
+                UNIQUE_DEVICE_ID.substring(0, 30)));
         assert publicKeyText != null;
         publicKeyText.setText(res.getString(R.string.public_key_string,
                 keyGen.getPublicKeyAsString().substring(0, 30)));
         assert privateKeyText != null;
         privateKeyText.setText(res.getString(R.string.private_key_string,
                 keyGen.getPrivateKeyAsString().substring(0, 30)));
-        Log.d("instantiateTextViews", "Text views created");
+        Log.i("instantiateTextViews", "Text views created");
     }
 
 
@@ -144,17 +151,17 @@ public class MainActivity extends AppCompatActivity {
     public String getUniqueAndroidDeviceId() {
         TelephonyManager tm =
                 (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);
-        Log.d("getUniqueAndroidDevice", "tm created");
+        Log.i("getUniqueAndroidDevice", "tm created");
         String tmDevice, tmSerial, androidId;
         tmDevice = "" + tm.getDeviceId();
         tmSerial = "" + tm.getSimSerialNumber();
         androidId = "" + android.provider.Settings.Secure.getString(getContentResolver(),
                 android.provider.Settings.Secure.ANDROID_ID);
-        Log.d("getUniqueAndroidDevice", "strings created");
+        Log.i("getUniqueAndroidDevice", "strings created");
 
         UUID deviceUuid = new UUID(androidId.hashCode(),
                 ((long) tmDevice.hashCode() << 32) | tmSerial.hashCode());
-        Log.d("Giggle_getUniqueAndroid", "UUID created");
+        Log.i("Giggle_getUniqueAndroid", "UUID created");
         return deviceUuid.toString();
     }
 
@@ -172,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
             FileInputStream inputStream = new FileInputStream(file);
             DropboxAPI.Entry response = mDBApi.putFileOverwrite(file.getName(), inputStream,
                     file.length(), null);
-            Log.d("addFileToDropBox", "The uploaded file's rev is: " + response.rev);
+            Log.i("addFileToDropBox", "The uploaded file's rev is: " + response.rev);
         } catch (Exception e) {
             Log.e("addFileToDropBox", "IOException", e);
         }
@@ -189,11 +196,11 @@ public class MainActivity extends AppCompatActivity {
     public File getAppDatabase() {
         try {
             File file = new File(getFilesDir(), SecretConstants.DATABASE_NAME);
-            Log.d("getAppDatabase", "File name: " + file.getName());
+            Log.i("getAppDatabase", "File name: " + file.getName());
             FileOutputStream outputStream = new FileOutputStream(file);
             DropboxAPI.DropboxFileInfo info =
                     mDBApi.getFile(file.getName(), null, outputStream, null);
-            Log.d("getAppDatabase", "The file's rev is: " + info.getMetadata().rev);
+            Log.i("getAppDatabase", "The file's rev is: " + info.getMetadata().rev);
             return file;
         } catch (Exception e) {
             Log.e("getAppDatabase", e.toString(), e);
@@ -205,12 +212,12 @@ public class MainActivity extends AppCompatActivity {
         Cursor resultSet = DATA_BASE.rawQuery(
                 "SELECT UniqueDeviceId FROM UserAccounts", null);
         if (resultSet.getCount() > 0) {
-            Log.d("addDeviceToUserGroup", "More than 0 rows in table");
+            Log.i("addDeviceToUserGroup", "More than 0 rows in table");
             resultSet.moveToFirst();
             while (!resultSet.isAfterLast()) {
                 // if the UNIQUE_DEVICE_ID is already in the table then return
                 if (resultSet.getString(0).equals(UNIQUE_DEVICE_ID)) {
-                    Log.d("addDeviceToUserGroup", "User already in table");
+                    Log.i("addDeviceToUserGroup", "User already in table");
                     resultSet.close();
                     return true;
                 }
@@ -220,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
         DATA_BASE.execSQL("INSERT INTO UserAccounts VALUES(" +
                 "'" + UNIQUE_DEVICE_ID + "'," +
                 "'" + keyGen.getPublicKeyAsString() + "');");
-        Log.d("addDeviceToUserGroup",
+        Log.i("addDeviceToUserGroup",
                 "Added " + UNIQUE_DEVICE_ID + " : " + keyGen.getPublicKeyAsString());
         resultSet.close();
         return false;
@@ -230,33 +237,33 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case REQUEST_CODE_CON_TO_DROPBOX:
-                Log.d("Giggle_onActivityResult",
+                Log.i("Giggle_onActivityResult",
                         "" + mDBApi.getSession().authenticationSuccessful());
-                Log.d("Giggle_onActivityResult", mDBApi.getSession().getOAuth2AccessToken());
+                Log.i("Giggle_onActivityResult", mDBApi.getSession().getOAuth2AccessToken());
                 AsyncTask.execute(new Runnable() {
                     @Override
                     public void run() {
                         databaseFile = getAppDatabase();
-                        Log.d("Giggle_onActivityResult", "Name: " + databaseFile.getName());
-                        Log.d("Giggle_onActivityResult", "Path: " + databaseFile.getPath());
+                        Log.i("Giggle_onActivityResult", "Name: " + databaseFile.getName());
+                        Log.i("Giggle_onActivityResult", "Path: " + databaseFile.getPath());
                         DATA_BASE = openOrCreateDatabase(databaseFile.getPath(),
                                 MODE_PRIVATE, null);
                     }
                 });
                 try {
                     while (DATA_BASE == null) {
-                        Log.d("Giggle_onActivityResult", "Waiting");
+                        Log.i("Giggle_onActivityResult", "Waiting");
                         Thread.sleep(250);
                     }
                     boolean wasInGroup = addDeviceToUserGroup();
                     DATA_BASE.close();
-                    Log.d("Giggle_onActivityResult", "Was in Group: " + wasInGroup);
+                    Log.i("Giggle_onActivityResult", "Was in Group: " + wasInGroup);
                     if (!wasInGroup) {
                         AsyncTask.execute(new Runnable() {
                             @Override
                             public void run() {
                                 addFileToDropBox(databaseFile);
-                                Log.d("Giggle_onActivityResult", "Database updated on DropBox");
+                                Log.i("Giggle_onActivityResult", "Database updated on DropBox");
                             }
                         });
                     }
