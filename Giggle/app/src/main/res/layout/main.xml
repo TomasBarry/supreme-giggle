@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_light">
+
+    <RelativeLayout
+        android:id="@+id/main_header_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="30dp"
+        android:paddingTop="30dp">
+
+        <TextView
+            android:id="@+id/device_id"
+            style="@style/HeaderString"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/info.device_id" />
+
+        <TextView
+            android:id="@+id/public_key"
+            style="@style/HeaderString"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/device_id"
+            android:layout_alignStart="@+id/device_id"
+            android:layout_below="@+id/device_id"
+            android:text="@string/info.public_key" />
+
+        <TextView
+            android:id="@+id/private_key"
+            style="@style/HeaderString"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/public_key"
+            android:layout_alignStart="@+id/public_key"
+            android:layout_below="@+id/public_key"
+            android:text="@string/info.private_key" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/main_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/main_header_info">
+
+        <Button
+            android:id="@+id/personal_files_button"
+            style="@style/ActionButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="openUserFilesView"
+            android:text="@string/header.your_files" />
+
+        <Button
+            android:id="@+id/download_button"
+            style="@style/ActionButton"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/personal_files_button"
+            android:layout_marginRight="5dp"
+            android:onClick="openDownloadFileView"
+            android:text="@string/button.label.download" />
+
+        <Button
+            android:id="@+id/upload_button"
+            style="@style/ActionButton"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/personal_files_button"
+            android:layout_marginLeft="15dp"
+            android:layout_toRightOf="@+id/download_button"
+            android:onClick="openUploadFileView"
+            android:text="@string/button.label.upload" />
+
+    </RelativeLayout>
+
+</RelativeLayout>
