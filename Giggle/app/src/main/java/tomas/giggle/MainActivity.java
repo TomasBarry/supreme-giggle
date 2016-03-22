@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
     private DeviceId deviceId;
     private String deviceIdString;
 
-    private DatabaseController databaseController;
+    public DatabaseController databaseController;
 
     private final int CON_TO_DROPBOX = 1000;
 
@@ -65,8 +65,7 @@ public class MainActivity extends Activity {
             while (s == null) {
                 Thread.sleep(500);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.e("waitToGetBack", e.toString(), e);
         }
         Log.i("waitToGetBack", "Got file back from DropBox");
@@ -125,6 +124,12 @@ public class MainActivity extends Activity {
 
 
     private void initializeTextViews() {
+        Log.i("pk length", "public: " + publicKeyAsString.length());
+        Log.i("pk length", "private: " + privateKeyAsString.length());
+
+        Log.i("pk ", publicKeyAsString);
+        Log.i("de ", deviceIdString);
+
         Log.i("initializeTextViews", "Initializing text views");
         Resources res = getResources();
 
@@ -169,7 +174,7 @@ public class MainActivity extends Activity {
                 this.accessToken = mDBApi.getSession().getOAuth2AccessToken();
                 this.databaseController = new DatabaseController(this);
                 Log.i("onResumeMA", "databaseControllerObject created");
-                if(!databaseController.checkIfValidUser(deviceIdString, publicKeyAsString)) {
+                if (!databaseController.checkIfValidUser(deviceIdString, publicKeyAsString)) {
                     finish();
                 }
             } catch (IllegalStateException e) {
@@ -178,55 +183,3 @@ public class MainActivity extends Activity {
         }
     }
 }
-
-//                AsyncTask.execute(new Runnable() {
-//                    @Override
-//                    public void run() {
-////                        databaseFile = getAppDatabase();
-////                        Log.i("Giggle_onActivityResult", "Name: " + databaseFile.getName());
-////                        Log.i("Giggle_onActivityResult", "Path: " + databaseFile.getPath());
-////                        DATA_BASE = openOrCreateDatabase(databaseFile.getPath(),
-////                                MODE_PRIVATE, null);
-//                    }
-//                });
-//                try {
-//                    while (DATA_BASE == null) {
-//                        Log.i("Giggle_onActivityResult", "Waiting");
-//                        Thread.sleep(250);
-//                    }
-//                    boolean wasInGroup = addDeviceToUserGroup();
-//                    DATA_BASE.close();
-//                    Log.i("Giggle_onActivityResult", "Was in Group: " + wasInGroup);
-//                    if (!wasInGroup) {
-//                        AsyncTask.execute(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                addFileToDropBox(databaseFile);
-//                                Log.i("Giggle_onActivityResult", "Database updated on DropBox");
-//                            }
-//                        });
-//                    }
-//                } catch (Exception e) {
-//                    Log.e("Giggle_onActivityResult", "Exception " + e.toString(), e);
-//                }
-
-
-//    /**
-//     * addFileToDropBox
-//     * <p/>
-//     * Add a file to DropBox. Files are added to the root folder for the moment.
-//     * Note: Run this method in a background task
-//     *
-//     * @param file: the file to add to DropBox
-//     */
-//    public void addFileToDropBox(File file) {
-//        try {
-//            FileInputStream inputStream = new FileInputStream(file);
-//            DropboxAPI.Entry response = mDBApi.putFileOverwrite(file.getName(), inputStream,
-//                    file.length(), null);
-//            Log.i("addFileToDropBox", "The uploaded file's rev is: " + response.rev);
-//        } catch (Exception e) {
-//            Log.e("addFileToDropBox", "IOException", e);
-//        }
-//    }
-
