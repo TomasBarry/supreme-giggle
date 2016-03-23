@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
     private DeviceId deviceId;
     private String deviceIdString;
 
-    public DatabaseController databaseController;
+    public static DatabaseController databaseController;
 
     private final int CON_TO_DROPBOX = 1000;
 
@@ -74,6 +74,9 @@ public class MainActivity extends Activity {
 
     public void openUserFilesView(View v) {
         Log.i("openUserFilesView", "User wants to open their files");
+        Intent i = new Intent(this, PersonalFileView.class);
+        i.putExtra("userPublicKey", publicKeyAsString);
+        startActivity(i);
     }
 
 
@@ -172,7 +175,7 @@ public class MainActivity extends Activity {
                 // Required to complete auth, sets the access token on the session
                 mDBApi.getSession().finishAuthentication();
                 this.accessToken = mDBApi.getSession().getOAuth2AccessToken();
-                this.databaseController = new DatabaseController(this);
+                databaseController = new DatabaseController(this);
                 Log.i("onResumeMA", "databaseControllerObject created");
                 if (!databaseController.checkIfValidUser(deviceIdString, publicKeyAsString)) {
                     finish();

@@ -5,18 +5,18 @@
     android:background="@color/gray_light">
 
     <TextView
-        android:id="@+id/personal_files_header"
+        android:id="@+id/file_or_dir_name"
         style="@style/HeaderString"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/header.your_files" />
+        android:text="@string/header.file_name" />
 
     <ListView
-        android:id="@+id/owned_files_list"
+        android:id="@+id/permissioned_users"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/personal_files_header"
-        android:layout_alignStart="@+id/personal_files_header"
-        android:layout_below="@+id/personal_files_header" />
+        android:layout_alignLeft="@+id/file_or_dir_name"
+        android:layout_alignStart="@+id/file_or_dir_name"
+        android:layout_below="@+id/file_or_dir_name" />
 
 </RelativeLayout>

@@ -68,8 +68,10 @@ public class KeyGenerator extends Activity{
         return null;
     }
     public String getPublicKeyAsString(){
-        return SP.getString("PublicKey", "");
+        return SP.getString("PublicKey", "").replaceAll("[^a-zA-Z0-9]+", "");
     }
+
+
     public PrivateKey getPrivateKey(){
         String privKeyStr = SP.getString("PrivateKey", "");
         byte[] sigBytes = Base64.decode(privKeyStr, Base64.DEFAULT);
@@ -89,6 +91,6 @@ public class KeyGenerator extends Activity{
         return null;
     }
     public String getPrivateKeyAsString(){
-        return SP.getString("PrivateKey", "");
+        return SP.getString("PrivateKey", "").replaceAll("[^a-zA-Z0-9]+","");
     }
 }

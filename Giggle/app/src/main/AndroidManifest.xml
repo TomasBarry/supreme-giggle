@@ -39,7 +39,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ConnectToDropBoxActivity" />
+        <activity android:name=".PersonalFileView" />
+        <activity android:name=".UserPermissionsViewer" />
     </application>
 
 </manifest>
