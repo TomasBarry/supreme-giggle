@@ -44,27 +44,7 @@ public class UserPermissionsViewer extends Activity {
         }
 
         this.list = (ListView) findViewById(R.id.permissioned_users);
-
-        this.list.setAdapter(new MyCustomBaseAdapter(this, usersAndPerms));
-
-//        this.list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> a, View v, int position, long id) {
-//                Log.i("onCreate_UPV", "gets here");
-//                Object o = list.getItemAtPosition(position);
-//                UserPermission fullObject = (UserPermission) o;
-//                Log.i("onCreate_UPV", "" + fullObject.getUserName());
-//            }
-//        });
-//
-//
-//        list.setOnItemClickListener(
-//                new AdapterView.OnItemClickListener() {
-//                    public void onItemClick(AdapterView<?> myAdapter, View myView, int myItemInt, long mylng) {
-//                        Log.i("onCreate_UPV", "User wants to see permissions for ");
-//                    }
-//                }
-//        );
+        this.list.setAdapter(new MyCustomBaseAdapter(this, usersAndPerms, fileNameString));
 
         Log.i("onCreate_UPV", "Ending on create");
     }

@@ -12,21 +12,24 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 public class MyCustomBaseAdapter extends BaseAdapter {
-    private static ArrayList<UserPermission> searchArrayList;
+    private ArrayList<UserPermission> usersAndPerms;
 
     private LayoutInflater mInflater;
 
-    public MyCustomBaseAdapter(Context context, ArrayList<UserPermission> results) {
-        this.searchArrayList = results;
+    private String fileName;
+
+    public MyCustomBaseAdapter(Context context, ArrayList<UserPermission> results, String fileName) {
+        this.usersAndPerms = results;
         this.mInflater = LayoutInflater.from(context);
+        this.fileName = fileName;
     }
 
     public int getCount() {
-        return searchArrayList.size();
+        return usersAndPerms.size();
     }
 
     public Object getItem(int position) {
-        return searchArrayList.get(position);
+        return usersAndPerms.get(position);
     }
 
     public long getItemId(int position) {
@@ -45,7 +48,24 @@ public class MyCustomBaseAdapter extends BaseAdapter {
 
                 @Override
                 public void onClick(View v) {
-                    Log.i("switch clicked", "The clicked switch: " + holder.id);
+                    usersAndPerms.get(holder.id).flipPermission();
+                    Log.i("switch clicked", "The clicked switch for user "
+                            + usersAndPerms.get(holder.id).getUserName()
+                            + " was at " + !usersAndPerms.get(holder.id).getPermission()
+                            + " is at " + usersAndPerms.get(holder.id).getPermission());
+                    if (usersAndPerms.get(holder.id).getPermission()) {
+                        Log.i("switch clicked", "Adding permission on file " + fileName);
+                        MainActivity.databaseController.printTable("FileKeys");
+                        MainActivity.databaseController.addPermissionFor(usersAndPerms.get(holder.id).getUserName(), fileName);
+                        MainActivity.databaseController.printTable("FileKeys");
+                        Log.i("switch clicked", "Added permission on file " + fileName);
+                    } else {
+                        Log.i("switch clicked", "Revoking permission on file " + fileName);
+                        MainActivity.databaseController.printTable("FileKeys");
+                        MainActivity.databaseController.revokePermissionsFor(usersAndPerms.get(holder.id).getUserName(), fileName);
+                        MainActivity.databaseController.printTable("FileKeys");
+                        Log.i("switch clicked", "Revoked permission on file " + fileName);
+                    }
                 }
             });
 
@@ -53,8 +73,8 @@ public class MyCustomBaseAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        holder.userName.setText(searchArrayList.get(position).getUserName());
-        holder.permission.setChecked(searchArrayList.get(position).getPermission());
+        holder.userName.setText(usersAndPerms.get(position).getUserName());
+        holder.permission.setChecked(usersAndPerms.get(position).getPermission());
         return convertView;
     }
 

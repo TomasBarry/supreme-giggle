@@ -15,7 +15,7 @@ public class PersonalFileView extends Activity {
 
     private ListView list;
     private TextView headerString;
-    private String [] fileNamesForUser;
+    private String[] fileNamesForUser;
     private String userPublicKey;
 
     @Override
@@ -60,5 +60,11 @@ public class PersonalFileView extends Activity {
         i.putExtra("userPublicKey", this.userPublicKey);
         i.putExtra("fileName", fileName);
         startActivity(i);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.i("onActivityResult_PFV", "Came back to PersonalFileViewActivity");
     }
 }

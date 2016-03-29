@@ -19,4 +19,12 @@ public class UserPermission {
     public boolean getPermission() {
         return this.permission;
     }
+
+    public void setPermission(boolean state) {
+        this.permission = state;
+    }
+
+    public void flipPermission() {
+        this.permission = !this.permission;
+    }
 }
