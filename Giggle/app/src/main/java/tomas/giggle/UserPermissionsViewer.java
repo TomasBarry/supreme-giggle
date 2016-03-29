@@ -3,9 +3,6 @@ package tomas.giggle;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -37,26 +34,37 @@ public class UserPermissionsViewer extends Activity {
 
         this.userNamesAndPerms = MainActivity.databaseController.getUsersAndPermissionsFor(userPublicKey, fileNameString);
 
+        ArrayList<UserPermission> usersAndPerms = new ArrayList<>();
+
         ArrayList<String> keys = new ArrayList<String>(this.userNamesAndPerms.keySet());
-        ArrayList<Boolean> values = new ArrayList<Boolean>(this.userNamesAndPerms.values());
+
+        for (String key : keys) {
+            Log.i("onCreate_UPV", "User: " + key + "| Switch: " + this.userNamesAndPerms.get(key));
+            usersAndPerms.add(new UserPermission(key, this.userNamesAndPerms.get(key)));
+        }
 
         this.list = (ListView) findViewById(R.id.permissioned_users);
 
-        list.setAdapter(
-                new ArrayAdapter<String>(
-                        this,
-                        R.layout.list_view_row_just_text,
-                        R.id.file_or_dir_name,
-                        keys)
-        );
+        this.list.setAdapter(new MyCustomBaseAdapter(this, usersAndPerms));
 
-        list.setOnItemClickListener(
-                new AdapterView.OnItemClickListener() {
-                    public void onItemClick(AdapterView<?> myAdapter, View myView, int myItemInt, long mylng) {
-                        Log.i("onCreate_UPV", "User wants to see permissions for ");
-                    }
-                }
-        );
+//        this.list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+//                Log.i("onCreate_UPV", "gets here");
+//                Object o = list.getItemAtPosition(position);
+//                UserPermission fullObject = (UserPermission) o;
+//                Log.i("onCreate_UPV", "" + fullObject.getUserName());
+//            }
+//        });
+//
+//
+//        list.setOnItemClickListener(
+//                new AdapterView.OnItemClickListener() {
+//                    public void onItemClick(AdapterView<?> myAdapter, View myView, int myItemInt, long mylng) {
+//                        Log.i("onCreate_UPV", "User wants to see permissions for ");
+//                    }
+//                }
+//        );
 
         Log.i("onCreate_UPV", "Ending on create");
     }
