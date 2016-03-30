@@ -45,6 +45,7 @@
         <activity android:name=".UserPermissionsViewer" />
         <activity android:name=".ServerFileView" />
         <activity android:name=".ConfirmActivity" />
+        <activity android:name=".DownloadFileActivity" />
     </application>
 
 </manifest>

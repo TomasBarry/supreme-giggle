@@ -2,6 +2,8 @@ package tomas.giggle;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
@@ -20,6 +22,7 @@ public class DropboxCommunicator {
 
     private Context context;
     private String encKey;
+    private Bitmap bitmap = null;
 
     public DropboxCommunicator(Context context) {
         this.context = context;
@@ -82,6 +85,36 @@ public class DropboxCommunicator {
         return null;
     }
 
+    public File decryptFile(File f, String publicKey) {
+        Log.i("decryptFile", "About to decrypt the file " + f.getName());
+        try {
+            byte[] encryptedBytes = fileToBytes(f);
+
+            String key = MainActivity.databaseController.getEncKeyFor(f.getName());
+            EncryptionKey encryptionKey =
+                    new EncryptionKey(key, new KeyGenerator(context).getPublicKeyAsString(), true, context);
+            Log.i("encryptFile", "encrypted " + encryptionKey.getEncryptedKey());
+            Log.i("encryptFile", "decrypted " + encryptionKey.getDecryptedKey());
+            Log.i("encryptFile", "private " + encryptionKey.getPrivateKey());
+
+            String decryptedKey = encryptionKey.getDecryptedKey();
+
+
+            SecretKeySpec secretKeySpec =
+                    new SecretKeySpec(new Base64Translator(context).toBinary(encryptionKey.getDecryptedKey()), "AES");
+            Cipher c = Cipher.getInstance("AES");
+            c.init(Cipher.DECRYPT_MODE, secretKeySpec);
+            byte[] decodedBytes = c.doFinal(encryptedBytes);
+            Log.i("decryptFile", "Decrypted the file woo hoo :D");
+            return bytesToFile(decodedBytes, f.getName().substring(8, f.getName().length() - 1));
+
+        } catch (Exception e) {
+            Log.e("decryptFile", e.toString(), e);
+        }
+        Log.i("decryptFile", "Couldn't decrypt file, returning null");
+        return null;
+    }
+
     public void uploadFile(String path) {
         Log.i("uploadFile", "About to upload file at " + path);
         File plainFile = new File(path);
@@ -111,9 +144,44 @@ public class DropboxCommunicator {
         Log.i("uploadFile", "Finished uploading file");
     }
 
-    public void downloadFile(String fileName) {
-        Log.i("downloadFile", "About to download file " + fileName);
+    public Bitmap downloadFile(String fName, String pKey) {
+        Log.i("downloadFile", "About to download file " + fName);
+        final String fileName = fName;
+        final String publicKey = pKey;
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    File encryptedFile = File.createTempFile(fileName, "");
+                    encryptedFile.deleteOnExit();
+                    FileOutputStream outputStream = new FileOutputStream(encryptedFile);
+                    DropboxAPI.DropboxFileInfo info =
+                            MainActivity.mDBApi.getFile(fileName, null, outputStream, null);
+                    Log.i("downloadFile", "The file's rev is: " + info.getMetadata().rev);
+                    File f = decryptFile(encryptedFile, publicKey);
+                    bitmap = BitmapFactory.decodeFile(f.getPath());
 
+                } catch (Exception e) {
+                    Log.e("downloadFile", e.toString(), e);
+                }
+            }
+        });
+        waitForBitmap();
+        Log.i("downloadFile", "Downloaded  the file and returning the bitmap");
+        return bitmap;
+    }
+
+    private void waitForBitmap() {
+        Log.i("waitForBitmap", "Waiting to get file back from DropBox");
+        try {
+            while (this.bitmap == null) {
+                Thread.sleep(250);
+                Log.i("waitForBitmap", "Waiting");
+            }
+        } catch (Exception e) {
+            Log.e("waitForBitmap", e.toString(), e);
+        }
+        Log.i("waitForBitmap", "Got file back from DropBox");
     }
 
     public String getRealPathFromURI(Uri uri) {
