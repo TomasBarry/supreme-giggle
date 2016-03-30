@@ -44,9 +44,12 @@ public class EncryptionKey {
         Log.i("encryptKey", "About to encrypt " + plainKey + " with " + publicKey);
         this.plainKey = plainKey;
         this.publicKey = publicKey;
-        PublicKey key = new KeyGenerator(context).getPublicKey();
+        PublicKey key0 = new KeyGenerator(context).getPublicKey();
         PublicKey key1 = new KeyGenerator(context).getPublicKey();
-        Log.i("encryptKey", "Are the keys equal: " + key.equals(key1));
+        Log.i("encryptKey", "Are the keys equal: " + key0.equals(key1));
+
+        PublicKey key = new KeyGenerator(context).generateKeyFromString(publicKey);
+
         Base64Translator trans = new Base64Translator(context);
         byte [] transKeyBinary = trans.toBinary(plainKey);
         byte[] encryptedBytes;

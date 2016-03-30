@@ -43,6 +43,7 @@
     <!-- File Upload/Download Activity -->
 
     <!-- Text -->
+    <string name="header.server_files">Server Files</string>
     <string name="header.upload_prompt">Do you want to upload %1$s?</string>
     <string name="header.download_prompt">Do you want to download %1$s?</string>
 

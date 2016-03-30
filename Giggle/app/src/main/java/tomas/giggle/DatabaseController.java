@@ -213,13 +213,23 @@ public class DatabaseController {
         Log.i("addPermissionFor", "About to add permissions for " + userName + " on file " + fileName);
         String userPublicKey = getUserKeyFromUserName(userName);
 
-        EncryptionKey encryptionKeyBefore = new EncryptionKey("hello", userPublicKey, false, context);
-        Log.i("addPermissionFor", "encryptionKey.plainKey " + encryptionKeyBefore.getPlainKey());
-        Log.i("addPermissionFor", "encryptionKey.encryptedKey " + encryptionKeyBefore.getEncryptedKey());
-        Log.i("addPermissionFor", "encryptionKey.publicKey " + encryptionKeyBefore.getPublicKey());
+        EncryptionKey encryptionKeyDecrypted =
+                new EncryptionKey(MainActivity.databaseController.getEncKeyFor(fileName),
+                        userPublicKey, true, context);
+
+        Log.i("addPermissionFor", "encryptionKeyDecrypted.encryptedKey " + encryptionKeyDecrypted.getEncryptedKey());
+        Log.i("addPermissionFor", "encryptionKeyDecrypted.privateKey " + encryptionKeyDecrypted.getPrivateKey());
+        Log.i("addPermissionFor", "encryptionKeyDecrypted.plainKey " + encryptionKeyDecrypted.getDecryptedKey());
+
+        EncryptionKey encryptionKeyEncrypted =
+                new EncryptionKey(encryptionKeyDecrypted.getDecryptedKey(), userPublicKey, false, context);
+
+        Log.i("addPermissionFor", "encryptionKeyEncrypted.plainKey " + encryptionKeyEncrypted.getPlainKey());
+        Log.i("addPermissionFor", "encryptionKeyEncrypted.publicKey " + encryptionKeyEncrypted.getPublicKey());
+        Log.i("addPermissionFor", "encryptionKeyEncrypted.encryptedKey " + encryptionKeyEncrypted.getEncryptedKey());
 
         database.execSQL("INSERT INTO FileKeys VALUES(" +
-                "'" + (userPublicKey + fileName) + "', " +
+                "'" + encryptionKeyEncrypted.getEncryptedKey() + "', " +
                 "'" + userPublicKey + "', " +
                 "'" + fileName + "', " +
                 "0)");
@@ -234,11 +244,11 @@ public class DatabaseController {
         waitToUploadDBFile();
     }
 
-    public String getEncKeyFor(String fileName, String userPublicKey) {
-        Log.i("getEncKeyFor", "Begining to get EncKey for file " + fileName + " and user key: " + userPublicKey);
+    public String getEncKeyFor(String fileName) {
+        Log.i("getEncKeyFor", "Begining to get EncKey for file " + fileName);
         Cursor resultSet =
                 database.rawQuery("SELECT EncKey FROM FileKeys " +
-                        "WHERE UserPublicKey = '" + userPublicKey + "' " +
+                        "WHERE isOwner = 1 " +
                         "AND File = '" + fileName + "'", null);
         resultSet.moveToFirst();
         Log.i("getEncKeyFor", "EncKey is " + resultSet.getString(0));

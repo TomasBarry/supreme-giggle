@@ -50,7 +50,7 @@ public class UserPermissionsViewer extends Activity {
 
         SymmetricKeyHandler h = new SymmetricKeyHandler(this);
         SymmetricKeyHandler j = new SymmetricKeyHandler(this,
-                new Base64Translator(this).toBinary(MainActivity.databaseController.getEncKeyFor(fileNameString, userPublicKey)));
+                new Base64Translator(this).toBinary(MainActivity.databaseController.getEncKeyFor(fileNameString)));
 
 //        EncryptionKey encryptionKeyBefore =
 //                new EncryptionKey(

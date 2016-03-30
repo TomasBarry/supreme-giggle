@@ -16,7 +16,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
-public class KeyGenerator extends Activity{
+public class KeyGenerator extends Activity {
 
     SharedPreferences SP;
     SharedPreferences.Editor SPE;
@@ -24,12 +24,17 @@ public class KeyGenerator extends Activity{
     PrivateKey privateKey;
     Context context;
 
-    public KeyGenerator(Context context){
+    public KeyGenerator(Context context) {
         this.context = context;
         SP = context.getSharedPreferences("KeyPair", MODE_PRIVATE);
     }
 
-    public void generateKeys(){
+    public KeyGenerator() {
+        this.context = null;
+        SP = null;
+    }
+
+    public void generateKeys() {
         try {
             KeyPairGenerator generator;
             generator = KeyPairGenerator.getInstance("RSA", "BC");
@@ -49,7 +54,33 @@ public class KeyGenerator extends Activity{
             Log.e("generateKeys", "Exception: " + e.toString(), e);
         }
     }
-    public PublicKey getPublicKey(){
+
+    public void printDummyKeys(int number) {
+        Log.i("printDummyKeys", "About to print some dummy keys");
+        try {
+            KeyPairGenerator generator;
+            generator = KeyPairGenerator.getInstance("RSA");
+            generator.initialize(256, new SecureRandom());
+            for (int i = 0; i < number; i++) {
+                KeyPair pair = generator.generateKeyPair();
+                publicKey = pair.getPublic();
+                privateKey = pair.getPrivate();
+                byte[] publicKeyBytes = publicKey.getEncoded();
+                String pubKeyStr = new String(Base64.encode(publicKeyBytes, Base64.DEFAULT));
+                byte[] privKeyBytes = privateKey.getEncoded();
+                String privKeyStr = new String(Base64.encode(privKeyBytes, Base64.DEFAULT));
+
+                Log.i("printDummyKeys", i + ": Public Key: {" + pubKeyStr + "}");
+                Log.i("printDummyKeys", i + ": Private Key: {" + privKeyStr + "}");
+            }
+        } catch (Exception e) {
+            Log.e("printDummyKeys", e.toString(), e);
+        }
+        Log.i("printDummyKeys", "Finished printing some dummy keys");
+
+    }
+
+    public PublicKey getPublicKey() {
         String pubKeyStr = SP.getString("PublicKey", "");
         byte[] sigBytes = Base64.decode(pubKeyStr, Base64.DEFAULT);
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(sigBytes);
@@ -61,18 +92,19 @@ public class KeyGenerator extends Activity{
         }
         try {
             assert keyFact != null;
-            return  keyFact.generatePublic(x509KeySpec);
+            return keyFact.generatePublic(x509KeySpec);
         } catch (InvalidKeySpecException e) {
             e.printStackTrace();
         }
         return null;
     }
-    public String getPublicKeyAsString(){
+
+    public String getPublicKeyAsString() {
         return SP.getString("PublicKey", "");
     }
 
 
-    public PrivateKey getPrivateKey(){
+    public PrivateKey getPrivateKey() {
         String privKeyStr = SP.getString("PrivateKey", "");
         byte[] sigBytes = Base64.decode(privKeyStr, Base64.DEFAULT);
         PKCS8EncodedKeySpec PKCS8EncodedKey = new PKCS8EncodedKeySpec(sigBytes);
@@ -91,7 +123,23 @@ public class KeyGenerator extends Activity{
         return null;
     }
 
-    public String getPrivateKeyAsString(){
+    public PublicKey generateKeyFromString(String key) {
+        Log.i("generateKeyFromString", "About to generate PublicKey object from " + key);
+        try {
+            byte[] byteKey = new Base64Translator(context).toBinary(key);
+            X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            Log.i("generateKeyFromString", "Generated PublicKey object from string");
+            return kf.generatePublic(X509publicKey);
+        } catch (Exception e) {
+            Log.e("generateKeyFromString", e.toString(), e);
+        }
+        Log.i("generateKeyFromString", "Couldn't generate key, returning null");
+        return null;
+    }
+
+
+    public String getPrivateKeyAsString() {
         return SP.getString("PrivateKey", "");
     }
 }
