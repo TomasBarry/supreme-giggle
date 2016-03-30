@@ -53,4 +53,11 @@ public class SymmetricKeyHandler {
         return null;
     }
 
+    public byte[] getBinaryDataKey() {
+        return binaryDataKey;
+    }
+
+    public SecretKeySpec getSecretKeySpec() {
+        return secretKeySpec;
+    }
 }

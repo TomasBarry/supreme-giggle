@@ -83,10 +83,10 @@ public class ServerFileView extends Activity {
 
     public void goToActionView(String fileName) {
         Log.i("goToActionView", "User wants to " + this.action + " a file called " + fileName);
-//        Intent i = new Intent(this, UserPermissionsViewer.class);
-//        i.putExtra("userPublicKey", this.userPublicKey);
-//        i.putExtra("fileName", fileName);
-//        startActivity(i);
+        Intent i = new Intent(this, DownloadFileActivity.class);
+        i.putExtra("userPublicKey", this.userPublicKey);
+        i.putExtra("fileName", fileName);
+        startActivity(i);
     }
 
     @Override

@@ -9,7 +9,6 @@
         style="@style/ItemString"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/list_item.label.file_name"
-        android:onClick="openFilePermissions"/>
+        android:text="@string/list_item.label.file_name"/>
 
 </RelativeLayout>

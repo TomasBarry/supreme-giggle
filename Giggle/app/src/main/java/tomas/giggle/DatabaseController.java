@@ -173,6 +173,25 @@ public class DatabaseController {
         return fileNames;
     }
 
+    public void addFileEntryIntoFileKeys(String encKey, String publicKey, String fileName, int isOwner) {
+        Log.i("addFileEntryIntoFK", "About to add entry with encKey " + encKey + ", publicKey " + publicKey + " fileName " + fileName + " isOwner " + isOwner);
+        database.execSQL("INSERT INTO FileKeys VALUES(" +
+                "'" + encKey + "', " +
+                "'" + publicKey + "', " +
+                "'" + fileName + "', " +
+                "" + isOwner + ")");
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                updateDatabaseFile();
+                Log.i("AsyncTask", "database file updated");
+
+            }
+        });
+        waitToUploadDBFile();
+        Log.i("addFileEntryIntoFK", "Added entry");
+    }
+
     public boolean checkIfValidUser(String deviceId, String publicKey) {
         Log.i("checkIfValidUser", "Checking if " + deviceId + " is a valid user");
         Cursor resultSet = database.rawQuery(
