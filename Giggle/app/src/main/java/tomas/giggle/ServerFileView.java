@@ -97,7 +97,11 @@ public class ServerFileView extends Activity {
             Uri targetUri = data.getData();
             String path = targetUri.toString();
             Log.i("onActivityResult_SFV", "Path is " + path);
-            
+            Intent i = new Intent(this, ConfirmActivity.class);
+            i.putExtra("filePath", path);
+            i.putExtra("userWantsTo", this.action);
+            startActivity(i);
+            finish();
         }
     }
 }
