@@ -82,11 +82,19 @@ public class MainActivity extends Activity {
 
     public void openDownloadFileView(View v) {
         Log.i("openDownloadFileView", "User wants to download a file");
+        Intent i = new Intent(this, ServerFileView.class);
+        i.putExtra("userPublicKey", publicKeyAsString);
+        i.putExtra("userWantsTo", "Download");
+        startActivity(i);
     }
 
 
     public void openUploadFileView(View v) {
         Log.i("openUploadFileView", "User wants to upload a file");
+        Intent i = new Intent(this, ServerFileView.class);
+        i.putExtra("userPublicKey", publicKeyAsString);
+        i.putExtra("userWantsTo", "Upload");
+        startActivity(i);
     }
 
 

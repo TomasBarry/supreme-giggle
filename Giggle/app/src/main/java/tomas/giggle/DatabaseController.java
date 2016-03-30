@@ -143,6 +143,21 @@ public class DatabaseController {
         return userNamesWithPerms;
     }
 
+    public String[] getFilesOnServer() {
+        Log.i("getFilesFor", "Getting all files on server");
+        Cursor resultSet = database.rawQuery(
+                "SELECT DISTINCT File FROM FileKeys", null);
+        String[] fileNames = new String[resultSet.getCount()];
+        resultSet.moveToFirst();
+        int i = 0;
+        while (!resultSet.isAfterLast()) {
+            Log.i("getFilesFor", "File namme: " + resultSet.getString(0));
+            fileNames[i++] = resultSet.getString(0);
+            resultSet.moveToNext();
+        }
+        return fileNames;
+    }
+
     public String[] getFilesFor(String userPublicKey) {
         Log.i("getFilesFor", "Getting files for " + userPublicKey);
         Cursor resultSet = database.rawQuery(
