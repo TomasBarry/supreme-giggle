@@ -2,6 +2,7 @@ package tomas.giggle;
 
 import android.app.Activity;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +24,9 @@ public class ConfirmActivity extends Activity {
     private String action;
     private String filePath;
     private String fileName;
+    private String uriPath;
+
+    private DropboxCommunicator dc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,11 +35,17 @@ public class ConfirmActivity extends Activity {
 
         Log.i("onCreate_CA", "Beginning onCreate for ConfirmActivity");
 
+
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            this.filePath = extras.getString("filePath");
-            this.fileName  = new File(filePath).getName();
+            this.uriPath = extras.getString("uriPath");
             this.action = extras.getString("userWantsTo");
+
+            this.dc = new DropboxCommunicator(this);
+            this.filePath = dc.getRealPathFromURI(Uri.parse(uriPath));
+
+            this.fileName = new File(filePath).getName();
+
             Log.i("onCreate_CA", "File is " + this.fileName + " and user wants to " + this.action);
         }
         Resources res = getResources();
@@ -50,6 +60,8 @@ public class ConfirmActivity extends Activity {
 
     public void confirm(View v) {
         Log.i("confirm", "User has confirmed");
+        dc.uploadFile(filePath);
+        finish();
     }
 
     public void cancel(View v) {
