@@ -2,6 +2,7 @@ package tomas.giggle;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -64,18 +65,19 @@ public class ServerFileView extends Activity {
         list.setOnItemClickListener(
                 new AdapterView.OnItemClickListener() {
                     public void onItemClick(AdapterView<?> myAdapter, View myView, int myItemInt, long mylng) {
-                        Log.i("onCreate_SVF", "User wants to download " + fileNamesOnServer[myItemInt]);
+                        Log.i("downloadHandler", "User wants to download " + fileNamesOnServer[myItemInt]);
                         goToActionView(fileNamesOnServer[myItemInt]);
                     }
                 }
         );
-
         Log.i("downloadHandler", "Ending download handler");
     }
 
     public void uploadHandler() {
-        Log.i("uploadHandler", "Beginnig upload hander");
-
+        Log.i("uploadHandler", "Beginnig upload handler");
+        Intent intent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, 0);
         Log.i("uploadHandler", "Ending upload handler");
     }
 
@@ -90,6 +92,12 @@ public class ServerFileView extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.i("onActivityResult_SFV", "Came back to PersonalFileViewActivity");
+        Log.i("onActivityResult_SFV", "Came back to ServerFileView");
+        if (resultCode == RESULT_OK){
+            Uri targetUri = data.getData();
+            String path = targetUri.toString();
+            Log.i("onActivityResult_SFV", "Path is " + path);
+            
+        }
     }
 }
