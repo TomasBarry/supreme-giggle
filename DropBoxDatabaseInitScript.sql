@@ -18,27 +18,41 @@ CREATE TABLE FileKeys (
 -- USERS
 -- ########################################################################## --
 INSERT INTO UserAccounts VALUES (
-	'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9FmwkoClf9TzGQLLoi3bK8SuaPJAgMBAAE',
+	'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9Fm+wkoClf9TzGQLLoi3bK8SuaPJ
+AgMBAAE=
+    ',
 	'ffffffff-b1c4-d360-9bfd-10ce37b353d5',
 	'Tomas Barry'
 );
 
 INSERT INTO UserAccounts VALUES (
-	'fake_KAIhAKJyiFBCFzl2Jd9m9Fm+wkoClf9TzGQLLoi3bK8SuaPJAgMBAAE=',
-	'fake_360-9bfd-10ce37b353d5',
+	'Fake_User_PublicKey_01',
+	'Fake_User_DeviceKey_01',
 	'Jimmy Russle'
 );
 
 INSERT INTO UserAccounts VALUES (
-	'fake_MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFsg',
-	'fake_ffffffff-b1c4-dsfsd5',
-	'John Doe'
+	'Fake_User_PublicKey_02',
+	'Fake_User_DeviceKey_02',
+	'Yolo Baggins'
 );
 
 INSERT INTO UserAccounts VALUES (
-	'fake_yolo',
-	'fake_ffffffff-b1c4-dsfsd5',
-	'Dank may mays'
+	'Fake_User_PublicKey_03',
+	'Fake_User_DeviceKey_03',
+	'Dank May May'
+);
+
+INSERT INTO UserAccounts VALUES (
+	'Fake_User_PublicKey_04',
+	'Fake_User_DeviceKey_04',
+	'Higgs Boson'
+);
+
+INSERT INTO UserAccounts VALUES (
+	'Fake_User_PublicKey_05',
+	'Fake_User_DeviceKey_05',
+	'Brochella Dinks'
 );
 
 -- ########################################################################## --
@@ -46,63 +60,69 @@ INSERT INTO UserAccounts VALUES (
 -- ########################################################################## --
 
 INSERT INTO FileKeys VALUES (
-		'fake_0',
-		'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9FmwkoClf9TzGQLLoi3bK8SuaPJAgMBAAE',
+		'UD5j21IbuxAsGPeOgxAxz05vAClTr+Tn8CH4XBLXTOI=',
+		'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9Fm+wkoClf9TzGQLLoi3bK8SuaPJ
+AgMBAAE=
+    ',
 		'fake_file_A',
 		1
 );
 
 INSERT INTO FileKeys VALUES (
-		'fake_1',
-		'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9FmwkoClf9TzGQLLoi3bK8SuaPJAgMBAAE',
+		'My_EncyKey_B',
+		'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9Fm+wkoClf9TzGQLLoi3bK8SuaPJ
+AgMBAAE=
+    ',
 		'fake_file_B',
 		1
 );
 
 INSERT INTO FileKeys VALUES (
-		'fake_2',
-		'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9FmwkoClf9TzGQLLoi3bK8SuaPJAgMBAAE',
+		'My_EncyKey_C',
+		'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9Fm+wkoClf9TzGQLLoi3bK8SuaPJ
+AgMBAAE=
+    ',
 		'fake_file_C',
 		1
 );
 
 
 -- ########################################################################## --
--- Files not owned by Tomas but accessible by others
+-- Files owned by Tomas and accessible by others
 -- ########################################################################## --
 
 INSERT INTO FileKeys VALUES (
-		'fake_11',
-		'fake_KAIhAKJyiFBCFzl2Jd9m9Fm+wkoClf9TzGQLLoi3bK8SuaPJAgMBAAE=',
+		'Fake_EncyKey_D',
+		'Fake_User_PublicKey_01',
 		'fake_file_A',
 		0
 );
 
 INSERT INTO FileKeys VALUES (
-		'fake_12',
-		'fake_MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFsg',
+		'Fake_EncyKey_E',
+		'Fake_User_PublicKey_02',
 		'fake_file_A',
 		0
 );
 
 
 INSERT INTO FileKeys VALUES (
-		'fake_3',
-		'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9FmwkoClf9TzGQLLoi3bK8SuaPJAgMBAAE',
-		'fake_file_D',
+		'Fake_EncyKey_F',
+		'Fake_User_PublicKey_03',
+		'fake_file_A',
 		0
 );
 
 INSERT INTO FileKeys VALUES (
-		'fake_4',
-		'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9FmwkoClf9TzGQLLoi3bK8SuaPJAgMBAAE',
-		'fake_file_E',
+		'Fake_EncyKey_G',
+		'Fake_User_PublicKey_04',
+		'fake_file_A',
 		0
 );
 
 INSERT INTO FileKeys VALUES (
-		'fake_5',
-		'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9FmwkoClf9TzGQLLoi3bK8SuaPJAgMBAAE',
-		'fake_file_F',
+		'Fake_EncyKey_H',
+		'Fake_User_PublicKey_05',
+		'fake_file_A',
 		0
 );

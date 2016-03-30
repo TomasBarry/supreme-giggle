@@ -130,7 +130,20 @@ public class MainActivity extends Activity {
         Log.i("pk length", "public: " + publicKeyAsString.length());
         Log.i("pk length", "private: " + privateKeyAsString.length());
 
-        Log.i("pk ", publicKeyAsString);
+        // TODO remove
+//        String testKey = "MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9Fm+wkoClf9TzGQLLoi3bK8SuaPJ\nAgMBAAE=\n    ";
+//
+//        Log.i("hopo", "Length of public key: " + publicKeyAsString.length());
+//        Log.i("hopo", "Length of public key: " + testKey.length());
+
+//        if(publicKeyAsString.equals(testKey)) {
+//            Log.i("yolo", "swaggins");
+//        }
+//        else {
+//            Log.i("nolo", "naggins");
+//        }
+
+        Log.i("pk ", "Pk = {" + publicKeyAsString + "}");
         Log.i("de ", deviceIdString);
 
         Log.i("initializeTextViews", "Initializing text views");

@@ -68,7 +68,7 @@ public class KeyGenerator extends Activity{
         return null;
     }
     public String getPublicKeyAsString(){
-        return SP.getString("PublicKey", "").replaceAll("[^a-zA-Z0-9]+", "");
+        return SP.getString("PublicKey", "");
     }
 
 
@@ -90,7 +90,8 @@ public class KeyGenerator extends Activity{
         }
         return null;
     }
+
     public String getPrivateKeyAsString(){
-        return SP.getString("PrivateKey", "").replaceAll("[^a-zA-Z0-9]+","");
+        return SP.getString("PrivateKey", "");
     }
 }

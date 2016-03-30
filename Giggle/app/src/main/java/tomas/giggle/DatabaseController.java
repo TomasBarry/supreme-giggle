@@ -212,6 +212,12 @@ public class DatabaseController {
     public void addPermissionFor(String userName, String fileName) {
         Log.i("addPermissionFor", "About to add permissions for " + userName + " on file " + fileName);
         String userPublicKey = getUserKeyFromUserName(userName);
+
+        EncryptionKey encryptionKeyBefore = new EncryptionKey("hello", userPublicKey, false, context);
+        Log.i("addPermissionFor", "encryptionKey.plainKey " + encryptionKeyBefore.getPlainKey());
+        Log.i("addPermissionFor", "encryptionKey.encryptedKey " + encryptionKeyBefore.getEncryptedKey());
+        Log.i("addPermissionFor", "encryptionKey.publicKey " + encryptionKeyBefore.getPublicKey());
+
         database.execSQL("INSERT INTO FileKeys VALUES(" +
                 "'" + (userPublicKey + fileName) + "', " +
                 "'" + userPublicKey + "', " +
@@ -226,6 +232,17 @@ public class DatabaseController {
             }
         });
         waitToUploadDBFile();
+    }
+
+    public String getEncKeyFor(String fileName, String userPublicKey) {
+        Log.i("getEncKeyFor", "Begining to get EncKey for file " + fileName + " and user key: " + userPublicKey);
+        Cursor resultSet =
+                database.rawQuery("SELECT EncKey FROM FileKeys " +
+                        "WHERE UserPublicKey = '" + userPublicKey + "' " +
+                        "AND File = '" + fileName + "'", null);
+        resultSet.moveToFirst();
+        Log.i("getEncKeyFor", "EncKey is " + resultSet.getString(0));
+        return resultSet.getString(0);
     }
 
     public File getDatabaseFile() {
