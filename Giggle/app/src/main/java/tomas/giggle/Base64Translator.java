@@ -19,14 +19,14 @@ public class Base64Translator {
 
     public String fromBinary(byte [] binaryData) {
         Log.i("fromBinary", "About to convert binaryData");
-        String stringData = Base64.encodeToString(binaryData, Base64.NO_WRAP);
+        String stringData = Base64.encodeToString(binaryData, Base64.DEFAULT);
         Log.i("fromBinary", "Converted binaryData to " + stringData);
         return stringData;
     }
 
     public byte [] toBinary(String stringData) {
         Log.i("toBinary", "About to convert stringData " + stringData);
-        byte [] binaryData = Base64.decode(stringData, Base64.NO_WRAP);
+        byte [] binaryData = Base64.decode(stringData, Base64.DEFAULT);
         Log.i("toBinary", "Converted stringData");
         return binaryData;
     }

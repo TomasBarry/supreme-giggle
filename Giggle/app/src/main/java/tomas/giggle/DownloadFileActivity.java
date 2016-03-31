@@ -39,6 +39,7 @@ public class DownloadFileActivity extends Activity {
         this.image = (ImageView) findViewById(R.id.downloaded_image);
         this.dc = new DropboxCommunicator(this);
         Bitmap bitmap = dc.downloadFile(this.fileName, this.userPublicKey);
+//        Bitmap bitmap = BitmapFactory.decodeFile("/storage/emulated/0/Pictures/Screenshots/Screenshot_2016-03-29-00-20-18.png");
         this.image.setImageBitmap(bitmap);
         Log.i("onCreate_DFA", "Finished onCreate");
     }
