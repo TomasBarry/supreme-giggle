@@ -15,4 +15,7 @@
     <color name="orange">#FF9D2F</color>
     <color name="red">#FF432F</color>
 
+    <!-- Specific section colors -->
+    <color name="app_background">@color/white</color>
+
 </resources>
