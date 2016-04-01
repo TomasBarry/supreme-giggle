@@ -11,11 +11,8 @@ import java.util.Hashtable;
 
 public class UserPermissionsViewer extends Activity {
 
-    private ListView list;
-    private TextView fileNameTextView;
     private String fileNameString;
-    private Hashtable<String, Boolean> userNamesAndPerms;
-    private String userPublicKey;
+    private DatabaseController dbc = MainActivity.databaseController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,50 +22,25 @@ public class UserPermissionsViewer extends Activity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            this.userPublicKey = extras.getString("userPublicKey");
             this.fileNameString = extras.getString("fileName");
         }
 
-        this.fileNameTextView = (TextView) findViewById(R.id.file_or_dir_name);
-        this.fileNameTextView.setText(this.fileNameString);
+        TextView fileNameTextView = (TextView) findViewById(R.id.file_or_dir_name);
+        fileNameTextView.setText(this.fileNameString);
 
-        this.userNamesAndPerms = MainActivity.databaseController.getUsersAndPermissionsFor(userPublicKey, fileNameString);
+        Hashtable<String, Boolean> userNamesAndPerms = dbc.getUsersAndPermissionsFor(
+                new KeyGenerator(this).getPublicKeyAsString(), fileNameString);
 
         ArrayList<UserPermission> usersAndPerms = new ArrayList<>();
 
-        ArrayList<String> keys = new ArrayList<String>(this.userNamesAndPerms.keySet());
+        ArrayList<String> keys = new ArrayList<>(userNamesAndPerms.keySet());
 
         for (String key : keys) {
-            Log.i("onCreate_UPV", "User: " + key + "| Switch: " + this.userNamesAndPerms.get(key));
-            usersAndPerms.add(new UserPermission(key, this.userNamesAndPerms.get(key)));
+            Log.i("onCreate_UPV", "User: " + key + "| Switch: " + userNamesAndPerms.get(key));
+            usersAndPerms.add(new UserPermission(key, userNamesAndPerms.get(key)));
         }
-
-        this.list = (ListView) findViewById(R.id.permissioned_users);
-        this.list.setAdapter(new MyCustomBaseAdapter(this, usersAndPerms, fileNameString));
-
+        ListView list = (ListView) findViewById(R.id.permissioned_users);
+        list.setAdapter(new MyCustomBaseAdapter(this, usersAndPerms, fileNameString));
         Log.i("onCreate_UPV", "Ending on create");
-
-        SymmetricKeyHandler h = new SymmetricKeyHandler(this);
-        SymmetricKeyHandler j = new SymmetricKeyHandler(this,
-                new Base64Translator(this).toBinary(MainActivity.databaseController.getEncKeyFor(fileNameString)));
-
-//        EncryptionKey encryptionKeyBefore =
-//                new EncryptionKey(
-//                        MainActivity.databaseController.getEncKeyFor(fileNameString, userPublicKey),
-//                        userPublicKey, false, this);
-//        Log.i("addPermissionFor", "encryptionKey.plainKey " + encryptionKeyBefore.getPlainKey());
-//        Log.i("addPermissionFor", "encryptionKey.encryptedKey " + encryptionKeyBefore.getEncryptedKey());
-//        Log.i("addPermissionFor", "encryptionKey.publicKey " + encryptionKeyBefore.getPublicKey());
-//
-//        EncryptionKey encryptionKeyAfter =
-//                new EncryptionKey(
-//                        encryptionKeyBefore.getEncryptedKey(),
-//                        new tomas.giggle.KeyGenerator(this).getPrivateKeyAsString(), true, this);
-//        Log.i("addPermissionFor", "encryptionKey.decryptedKey " + encryptionKeyAfter.getDecryptedKey());
-//        Log.i("addPermissionFor", "encryptionKey.encryptedKey " + encryptionKeyAfter.getEncryptedKey());
-//        Log.i("addPermissionFor", "encryptionKey.privateKey " + encryptionKeyAfter.getPrivateKey());
-//
-//        Log.i("PZL", "Are dey eqwal decrypted?? " + encryptionKeyBefore.getPlainKey().equals(encryptionKeyAfter.getDecryptedKey()));
-//        Log.i("PZL", "Are dey eqwal encryted??? " + encryptionKeyBefore.getEncryptedKey().equals(encryptionKeyAfter.getEncryptedKey()));
     }
 }

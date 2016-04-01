@@ -2,6 +2,7 @@ package tomas.giggle;
 
 
 import android.content.Context;
+import android.util.Base64;
 import android.util.Log;
 
 import java.security.PrivateKey;
@@ -50,14 +51,13 @@ public class EncryptionKey {
 
         PublicKey key = new KeyGenerator(context).generateKeyFromString(publicKey);
 
-        Base64Translator trans = new Base64Translator(context);
-        byte [] transKeyBinary = trans.toBinary(plainKey);
+        byte [] transKeyBinary = Base64.decode(plainKey, Base64.DEFAULT);
         byte[] encryptedBytes;
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, key);
             encryptedBytes = cipher.doFinal(transKeyBinary);
-            this.encryptedKey = trans.fromBinary(encryptedBytes);
+            this.encryptedKey = Base64.encodeToString(encryptedBytes, Base64.DEFAULT);
             Log.i("encryptKey", "The encrypted key is " + encryptedKey);
         } catch (Exception e) {
             Log.e("encryptKey", e.toString(), e);
@@ -73,14 +73,13 @@ public class EncryptionKey {
         PrivateKey key = new KeyGenerator(context).getPrivateKey();
         PrivateKey key1 = new KeyGenerator(context).getPrivateKey();
         Log.i("encryptKey", "Are the keys equal: " + key.equals(key1));
-        Base64Translator trans = new Base64Translator(context);
-        byte [] transKeyBinary = trans.toBinary(encryptedKey);
+        byte [] transKeyBinary = Base64.decode(encryptedKey, Base64.DEFAULT);
         byte [] decryptedBytes;
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, key);
             decryptedBytes = cipher.doFinal(transKeyBinary);
-            this.decryptedKey = trans.fromBinary(decryptedBytes);
+            this.decryptedKey = Base64.encodeToString(decryptedBytes, Base64.DEFAULT);
             Log.i("decryptKey", "Decrypted Key: " + decryptedKey);
         }
         catch (Exception e) {

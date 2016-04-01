@@ -9,16 +9,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 
 public class ServerFileView extends Activity {
 
-    private ListView list;
-    private TextView headerString;
     private String[] fileNamesOnServer;
-    private String userPublicKey;
     private String action;
+    private DatabaseController dbc = MainActivity.databaseController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,13 +23,9 @@ public class ServerFileView extends Activity {
         setContentView(R.layout.activity_server_file_view);
         Log.i("onCreate_SFV", "Starting on create");
 
-        this.headerString = (TextView) findViewById(R.id.server_files_header);
-
         Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            this.userPublicKey = extras.getString("userPublicKey");
-            this.action = extras.getString("userWantsTo");
-        }
+        this.action = extras.getString("userWantsTo");
+        assert action != null;
 
         switch (action) {
             case "Upload":
@@ -48,25 +41,23 @@ public class ServerFileView extends Activity {
     }
 
     public void downloadHandler() {
-        Log.i("downloadHandler", "Beginnig download hander");
+        Log.i("downloadHandler", "Beginning download handler");
 
-        this.fileNamesOnServer = MainActivity.databaseController.getFilesOnServer();
+        this.fileNamesOnServer = dbc.getFilesOnServer();
 
-        this.list = (ListView) findViewById(R.id.server_files_list);
-
+        ListView list = (ListView) findViewById(R.id.server_files_list);
         list.setAdapter(
-                new ArrayAdapter<String>(
+                new ArrayAdapter<>(
                         this,
                         R.layout.list_view_row_just_text,
                         R.id.file_or_dir_name,
                         fileNamesOnServer)
         );
-
         list.setOnItemClickListener(
                 new AdapterView.OnItemClickListener() {
                     public void onItemClick(AdapterView<?> myAdapter, View myView, int myItemInt, long mylng) {
                         Log.i("downloadHandler", "User wants to download " + fileNamesOnServer[myItemInt]);
-                        goToActionView(fileNamesOnServer[myItemInt]);
+                        downloadFile(fileNamesOnServer[myItemInt]);
                     }
                 }
         );
@@ -81,10 +72,9 @@ public class ServerFileView extends Activity {
         Log.i("uploadHandler", "Ending upload handler");
     }
 
-    public void goToActionView(String fileName) {
+    public void downloadFile(String fileName) {
         Log.i("goToActionView", "User wants to " + this.action + " a file called " + fileName);
         Intent i = new Intent(this, DownloadFileActivity.class);
-        i.putExtra("userPublicKey", this.userPublicKey);
         i.putExtra("fileName", fileName);
         startActivity(i);
     }
@@ -93,7 +83,7 @@ public class ServerFileView extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.i("onActivityResult_SFV", "Came back to ServerFileView");
-        if (resultCode == RESULT_OK){
+        if (resultCode == RESULT_OK) {
             Uri targetUri = data.getData();
             String path = targetUri.toString();
             Log.i("onActivityResult_SFV", "Path is " + path);

@@ -1,32 +1,19 @@
 package tomas.giggle;
 
 import android.app.Activity;
-import android.content.res.Resources;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.File;
 
-/**
- * Created by Tomas on 30/03/2016.
- */
 public class ConfirmActivity extends Activity {
 
-    private TextView prompt;
-
-    private Button noButton;
-    private Button yesButton;
-
-    private String action;
     private String filePath;
-    private String fileName;
-    private String uriPath;
-
-    private DropboxCommunicator dc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,37 +22,39 @@ public class ConfirmActivity extends Activity {
 
         Log.i("onCreate_CA", "Beginning onCreate for ConfirmActivity");
 
-
         Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            this.uriPath = extras.getString("uriPath");
-            this.action = extras.getString("userWantsTo");
+        String uriPath = extras.getString("uriPath");
+        String action = extras.getString("userWantsTo");
+        assert action != null;
 
-            this.dc = new DropboxCommunicator(this);
-            this.filePath = dc.getRealPathFromURI(Uri.parse(uriPath));
+        this.filePath = getRealPathFromURI(Uri.parse(uriPath));
+        String fileName = new File(filePath).getName();
 
-            this.fileName = new File(filePath).getName();
-
-            Log.i("onCreate_CA", "File is " + this.fileName + " and user wants to " + this.action);
-        }
-        Resources res = getResources();
-        this.prompt = (TextView) findViewById(R.id.confirmation_prompt);
-        this.prompt.setText(res.getString(R.string.header_confirm_prompt, this.action.toLowerCase(), this.fileName));
-
-        this.noButton = (Button) findViewById(R.id.no);
-        this.yesButton = (Button) findViewById(R.id.yes);
-
-
+        TextView prompt = (TextView) findViewById(R.id.confirmation_prompt);
+        prompt.setText(getResources().getString(
+                R.string.header_confirm_prompt, action.toLowerCase(), fileName));
     }
 
-    public void confirm(View v) {
+    public void confirm(View v) throws InterruptedException {
         Log.i("confirm", "User has confirmed");
-        dc.uploadFile(filePath);
+        new DropboxCommunicator(this).uploadFile(filePath);
         finish();
     }
 
     public void cancel(View v) {
         Log.i("cancel", "User has canceled");
         finish();
+    }
+
+    public String getRealPathFromURI(Uri uri) {
+        Log.i("getRealPathFromURI", "About to get real path");
+        Cursor cursor = this.getContentResolver().query(uri, null, null, null, null);
+        assert cursor != null;
+        cursor.moveToFirst();
+        String retString =
+                cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+        cursor.close();
+        Log.i("getRealPathFromURI", "Real path is " + retString);
+        return retString;
     }
 }

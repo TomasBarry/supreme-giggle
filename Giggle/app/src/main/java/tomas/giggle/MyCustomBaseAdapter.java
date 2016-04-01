@@ -1,6 +1,7 @@
 package tomas.giggle;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,8 +16,8 @@ public class MyCustomBaseAdapter extends BaseAdapter {
     private ArrayList<UserPermission> usersAndPerms;
 
     private LayoutInflater mInflater;
-
     private String fileName;
+    private DatabaseController dbc = MainActivity.databaseController;
 
     public MyCustomBaseAdapter(Context context, ArrayList<UserPermission> results, String fileName) {
         this.usersAndPerms = results;
@@ -48,27 +49,27 @@ public class MyCustomBaseAdapter extends BaseAdapter {
 
                 @Override
                 public void onClick(View v) {
-                    usersAndPerms.get(holder.id).flipPermission();
-                    Log.i("switch clicked", "The clicked switch for user "
-                            + usersAndPerms.get(holder.id).getUserName()
-                            + " was at " + !usersAndPerms.get(holder.id).getPermission()
-                            + " is at " + usersAndPerms.get(holder.id).getPermission());
-                    if (usersAndPerms.get(holder.id).getPermission()) {
-                        Log.i("switch clicked", "Adding permission on file " + fileName);
-                        MainActivity.databaseController.printTable("FileKeys");
-                        MainActivity.databaseController.addPermissionFor(usersAndPerms.get(holder.id).getUserName(), fileName);
-                        MainActivity.databaseController.printTable("FileKeys");
-                        Log.i("switch clicked", "Added permission on file " + fileName);
-                    } else {
-                        Log.i("switch clicked", "Revoking permission on file " + fileName);
-                        MainActivity.databaseController.printTable("FileKeys");
-                        MainActivity.databaseController.revokePermissionsFor(usersAndPerms.get(holder.id).getUserName(), fileName);
-                        MainActivity.databaseController.printTable("FileKeys");
-                        Log.i("switch clicked", "Revoked permission on file " + fileName);
+                    try {
+                        AsyncTask.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                usersAndPerms.get(holder.id).flipPermission();
+                            }
+                        });
+                        Log.i("switch clicked", "The clicked switch for user "
+                                + usersAndPerms.get(holder.id).getUserName()
+                                + " was at " + !usersAndPerms.get(holder.id).getPermission()
+                                + " is at " + usersAndPerms.get(holder.id).getPermission());
+                        if (usersAndPerms.get(holder.id).getPermission()) {
+                            dbc.addPermissionFor(usersAndPerms.get(holder.id).getUserName(), fileName);
+                        } else {
+                            dbc.revokePermissionsFor(usersAndPerms.get(holder.id).getUserName(), fileName);
+                        }
+                    } catch (Exception e) {
+                        Log.e("getView", e.toString(), e);
                     }
                 }
             });
-
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();

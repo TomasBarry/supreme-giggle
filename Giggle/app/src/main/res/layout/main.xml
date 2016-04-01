@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_background">
+    android:background="@color/gray_light">
 
     <RelativeLayout
         android:id="@+id/main_header_info"
@@ -18,7 +18,8 @@
             android:layout_height="wrap_content"
             android:drawableLeft="@drawable/device_id_image"
             android:drawableStart="@drawable/device_id_image"
-            android:text="@string/info.device_id" />
+            android:text="@string/info.device_id"
+            android:onClick="copyToClipboard"/>
 
         <TextView
             android:id="@+id/public_key"
@@ -30,7 +31,8 @@
             android:layout_below="@+id/device_id"
             android:drawableLeft="@drawable/public_key_25"
             android:drawableStart="@drawable/public_key_25"
-            android:text="@string/info.public_key" />
+            android:text="@string/info.public_key"
+            android:onClick="copyToClipboard"/>
 
         <TextView
             android:id="@+id/private_key"
@@ -42,7 +44,8 @@
             android:layout_below="@+id/public_key"
             android:drawableLeft="@drawable/private_key_25"
             android:drawableStart="@drawable/private_key_25"
-            android:text="@string/info.private_key" />
+            android:text="@string/info.private_key"
+            android:onClick="copyToClipboard"/>
 
     </RelativeLayout>
 
@@ -60,27 +63,32 @@
             android:onClick="openUserFilesView"
             android:text="@string/header.your_files" />
 
-        <Button
-            android:id="@+id/download_button"
-            style="@style/ActionButton"
-            android:layout_width="160dp"
+        <LinearLayout
+            android:orientation="horizontal"
+            android:id="@+id/up_down_load_buttons"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/personal_files_button"
-            android:layout_marginRight="5dp"
-            android:onClick="openDownloadFileView"
-            android:text="@string/button.label.download" />
+            android:layout_below="@+id/personal_files_button">
 
-        <Button
-            android:id="@+id/upload_button"
-            style="@style/ActionButton"
-            android:layout_width="160dp"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/personal_files_button"
-            android:layout_marginLeft="15dp"
-            android:layout_marginStart="15dp"
-            android:layout_toRightOf="@+id/download_button"
-            android:onClick="openUploadFileView"
-            android:text="@string/button.label.upload" />
+            <Button
+                android:id="@+id/download_button"
+                style="@style/ActionButton"
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:onClick="openDownloadFileView"
+                android:layout_marginRight="1dp"
+                android:text="@string/button.label.download" />
+
+            <Button
+                android:id="@+id/upload_button"
+                style="@style/ActionButton"
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:onClick="openUploadFileView"
+                android:layout_marginLeft="1dp"
+                android:text="@string/button.label.upload" />
+
+        </LinearLayout>
 
     </RelativeLayout>
 

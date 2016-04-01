@@ -1,8 +1,5 @@
 package tomas.giggle;
 
-/**
- * Created by Tomas on 24/03/2016.
- */
 public class UserPermission {
     private String userName;
     private boolean permission;
@@ -18,10 +15,6 @@ public class UserPermission {
 
     public boolean getPermission() {
         return this.permission;
-    }
-
-    public void setPermission(boolean state) {
-        this.permission = state;
     }
 
     public void flipPermission() {

@@ -29,11 +29,6 @@ public class KeyGenerator extends Activity {
         SP = context.getSharedPreferences("KeyPair", MODE_PRIVATE);
     }
 
-    public KeyGenerator() {
-        this.context = null;
-        SP = null;
-    }
-
     public void generateKeys() {
         try {
             KeyPairGenerator generator;
@@ -57,35 +52,10 @@ public class KeyGenerator extends Activity {
         }
     }
 
-    public void printDummyKeys(int number) {
-        Log.i("printDummyKeys", "About to print some dummy keys");
-        try {
-            KeyPairGenerator generator;
-            generator = KeyPairGenerator.getInstance("RSA");
-            generator.initialize(256, new SecureRandom());
-            for (int i = 0; i < number; i++) {
-                KeyPair pair = generator.generateKeyPair();
-                publicKey = pair.getPublic();
-                privateKey = pair.getPrivate();
-                byte[] publicKeyBytes = publicKey.getEncoded();
-                String pubKeyStr = new String(Base64.encode(publicKeyBytes, Base64.DEFAULT));
-                byte[] privKeyBytes = privateKey.getEncoded();
-                String privKeyStr = new String(Base64.encode(privKeyBytes, Base64.DEFAULT));
-
-                Log.i("printDummyKeys", i + ": Public Key: {" + pubKeyStr + "}");
-                Log.i("printDummyKeys", i + ": Private Key: {" + privKeyStr + "}");
-            }
-        } catch (Exception e) {
-            Log.e("printDummyKeys", e.toString(), e);
-        }
-        Log.i("printDummyKeys", "Finished printing some dummy keys");
-
-    }
 
     public PublicKey getPublicKey() {
         String pubKeyStr = SP.getString("PublicKey", "");
         byte[] sigBytes = Base64.decode(pubKeyStr, Base64.DEFAULT);
-        Log.i("plez", "" + sigBytes.length);
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(sigBytes);
         KeyFactory keyFact = null;
         try {
@@ -95,7 +65,6 @@ public class KeyGenerator extends Activity {
         }
         try {
             assert keyFact != null;
-            Log.i("plez", "" + sigBytes.length);
             return keyFact.generatePublic(x509KeySpec);
         } catch (InvalidKeySpecException e) {
             e.printStackTrace();
@@ -130,7 +99,7 @@ public class KeyGenerator extends Activity {
     public PublicKey generateKeyFromString(String key) {
         Log.i("generateKeyFromString", "About to generate PublicKey object from " + key);
         try {
-            byte[] byteKey = new Base64Translator(context).toBinary(key);
+            byte[] byteKey = Base64.decode(key, Base64.DEFAULT);
             X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
             KeyFactory kf = KeyFactory.getInstance("RSA");
             Log.i("generateKeyFromString", "Generated PublicKey object from string");

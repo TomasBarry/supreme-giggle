@@ -1,31 +1,22 @@
 package tomas.giggle;
 
 import android.content.Context;
+import android.util.Base64;
 import android.util.Log;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-/**
- * Created by Tomas on 30/03/2016.
- */
 public class SymmetricKeyHandler {
 
     private Context context;
-    private SecretKey secretKey;
-    private SecretKey secretKeySpec;
 
     private byte [] binaryDataKey;
 
     public SymmetricKeyHandler(Context context) {
         this.context = context;
         this.binaryDataKey = generateNewSymmetricKey();
-    }
-
-    public SymmetricKeyHandler(Context context, byte [] binaryDataKey) {
-        this.context = context;
-        this.binaryDataKey = binaryDataKey;
     }
 
     public byte [] generateNewSymmetricKey() {
@@ -42,8 +33,7 @@ public class SymmetricKeyHandler {
             rsaCipher.init(Cipher.ENCRYPT_MODE, new tomas.giggle.KeyGenerator(context).getPublicKey());
             byte [] encryptedSessionKey = rsaCipher.doFinal(secretKeySpec.getEncoded());
 
-            Base64Translator trans = new Base64Translator(context);
-            String stringOfBinary = trans.fromBinary(encryptedSessionKey);
+            String stringOfBinary = Base64.encodeToString(encryptedSessionKey, Base64.DEFAULT);
             Log.i("generateNewSymmetricKey", "Generated new symmetric key: " + stringOfBinary);
             return encryptedSessionKey;
         } catch (Exception e) {
@@ -57,7 +47,4 @@ public class SymmetricKeyHandler {
         return binaryDataKey;
     }
 
-    public SecretKey getSecretKeySpec() {
-        return secretKeySpec;
-    }
 }

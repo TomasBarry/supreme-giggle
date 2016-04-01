@@ -1,5 +1,6 @@
 package tomas.giggle;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -18,51 +19,30 @@ public class DatabaseController {
     private Context context;
     private File databaseFile;
     private SQLiteDatabase database;
+    private boolean finished = false;
 
-    public DatabaseController(Context context) {
+    public DatabaseController(final Context con) throws InterruptedException {
         Log.i("DatabaseController", "Constructor begins");
-        this.context = context;
+        this.context = con;
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
                 databaseFile = getAppDatabaseFile();
                 Log.i("AsyncTask", "database file received");
-
+                database = context.openOrCreateDatabase(databaseFile.getPath(), context.MODE_PRIVATE, null);
+                finished = true;
             }
         });
-        waitToGetBackDBFile();
-        this.database =
-                context.openOrCreateDatabase(databaseFile.getPath(), context.MODE_PRIVATE, null);
+        customWait();
         Log.i("DatabaseController", "Constructor ends");
     }
 
-
-    private void waitToGetBackDBFile() {
-        Log.i("waitToGetBack_DBC", "Waiting to get file back from DropBox");
-        try {
-            while (this.databaseFile == null) {
-                Thread.sleep(250);
-                Log.i("waitToGetBack_DBC", "Waiting");
-            }
-        } catch (Exception e) {
-            Log.e("waitToGetBack_DBC", e.toString(), e);
+    private void customWait() throws InterruptedException {
+        while (!finished) {
+            Thread.sleep(1);
         }
-        Log.i("waitToGetBack_DBC", "Got file back from DropBox");
+        finished = false;
     }
-
-    private void waitToUploadDBFile() {
-        Log.i("waitToUploadDBFile", "Waiting to upload file to DropBox");
-        try {
-            while (this.databaseFile == null) {
-                Thread.sleep(250);
-                Log.i("waitToUploadDBFile", "Waiting");
-            }
-        } catch (Exception e) {
-            Log.e("waitToUploadDBFile", e.toString(), e);
-        }
-        Log.i("waitToUploadDBFile", "Uploaded file to DropBox");
-    }
-
 
     /**
      * getAppDatabase
@@ -139,15 +119,17 @@ public class DatabaseController {
             resultSet.moveToNext();
         }
 
+        resultSet.close();
         Log.i("getUsersAndPermsFor", "Have user names and perms");
         return userNamesWithPerms;
     }
 
     public String[] getFilesOnServer() {
-        Log.i("getFilesFor", "Getting all files on server available to " + new KeyGenerator(context).getPublicKeyAsString());
+        Log.i("getFilesFor", "Getting all files on server available to "
+                + new KeyGenerator(context).getPublicKeyAsString());
         Cursor resultSet = database.rawQuery(
-                "SELECT DISTINCT File FROM FileKeys " +
-                        "WHERE UserPublicKey = '" + new KeyGenerator(context).getPublicKeyAsString() + "'", null);
+                "SELECT DISTINCT File FROM FileKeys WHERE UserPublicKey = " +
+                        "'" + new KeyGenerator(context).getPublicKeyAsString() + "'", null);
         String[] fileNames = new String[resultSet.getCount()];
         resultSet.moveToFirst();
         int i = 0;
@@ -156,13 +138,14 @@ public class DatabaseController {
             fileNames[i++] = resultSet.getString(0);
             resultSet.moveToNext();
         }
+        resultSet.close();
         return fileNames;
     }
 
     public String[] getFilesFor(String userPublicKey) {
         Log.i("getFilesFor", "Getting files for " + userPublicKey);
-        Cursor resultSet = database.rawQuery(
-                "SELECT DISTINCT File FROM FileKeys WHERE UserPublicKey = '" + userPublicKey + "' AND isOwner = 1", null);
+        Cursor resultSet = database.rawQuery("SELECT DISTINCT File FROM FileKeys " +
+                "WHERE UserPublicKey = '" + userPublicKey + "' AND isOwner = 1", null);
         String[] fileNames = new String[resultSet.getCount()];
         resultSet.moveToFirst();
         int i = 0;
@@ -171,25 +154,30 @@ public class DatabaseController {
             fileNames[i++] = resultSet.getString(0);
             resultSet.moveToNext();
         }
+        resultSet.close();
         return fileNames;
     }
 
-    public void addFileEntryIntoFileKeys(String encKey, String publicKey, String fileName, int isOwner) {
-        Log.i("addFileEntryIntoFK", "About to add entry with encKey " + encKey + ", publicKey " + publicKey + " fileName " + fileName + " isOwner " + isOwner);
-        database.execSQL("INSERT INTO FileKeys VALUES(" +
-                "'" + encKey + "', " +
-                "'" + publicKey + "', " +
-                "'" + fileName + "', " +
-                "" + isOwner + ")");
+    public void addFileEntryIntoFileKeys(
+            String encKey, String publicKey, String fileName, int isOwner)
+            throws InterruptedException {
+        Log.i("addFileEntryIntoFK", "About to add entry with encKey " + encKey + "," +
+                " publicKey " + publicKey + " fileName " + fileName + " isOwner " + isOwner);
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("EncKey", encKey);
+        contentValues.put("UserPublicKey", publicKey);
+        contentValues.put("File", fileName);
+        contentValues.put("isOwner", isOwner);
+        database.insert("FileKeys", null, contentValues);
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
                 updateDatabaseFile();
                 Log.i("AsyncTask", "database file updated");
-
+                finished = true;
             }
         });
-        waitToUploadDBFile();
+        customWait();
         Log.i("addFileEntryIntoFK", "Added entry");
     }
 
@@ -220,63 +208,60 @@ public class DatabaseController {
     }
 
     public String getUserKeyFromUserName(String userName) {
-        Cursor resultSet = database.rawQuery("SELECT UserPublicKey FROM UserAccounts WHERE UserName = '" + userName + "'", null);
+        Cursor resultSet = database.rawQuery(
+                "SELECT UserPublicKey FROM UserAccounts WHERE UserName = '" + userName + "'", null);
         resultSet.moveToFirst();
-        return resultSet.getString(0);
+        String retString = resultSet.getString(0);
+        resultSet.close();
+        return retString;
     }
 
-    public void revokePermissionsFor(String userName, String fileName) {
-        Log.i("revokePermissionsFor", "About to revoke permissions for " + userName + " on file " + fileName);
+    public void revokePermissionsFor(String userName, String fileName) throws InterruptedException {
+        Log.i("revokePermissionsFor",
+                "About to revoke permissions for " + userName + " on file " + fileName);
         String userPublicKey = getUserKeyFromUserName(userName);
         Log.i("revokePermissionsFor", "About to revoke permissions for " + userPublicKey);
-        database.execSQL(
-                "DELETE FROM FileKeys " +
-                        "WHERE UserPublicKey is '" + userPublicKey + "' " +
-                        "AND File is '" + fileName + "'");
+        database.delete("FileKeys", "UserPublicKey = ? AND File = ?", new String[]{
+                userPublicKey, fileName
+        });
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
                 updateDatabaseFile();
                 Log.i("AsyncTask", "database file updated");
-
+                finished = true;
             }
         });
-        waitToUploadDBFile();
+        customWait();
     }
 
-    public void addPermissionFor(String userName, String fileName) {
-        Log.i("addPermissionFor", "About to add permissions for " + userName + " on file " + fileName);
+    public void addPermissionFor(String userName, String fileName) throws InterruptedException {
+        Log.i("addPermissionFor",
+                "About to add permissions for " + userName + " on file " + fileName);
         String userPublicKey = getUserKeyFromUserName(userName);
 
         EncryptionKey encryptionKeyDecrypted =
                 new EncryptionKey(MainActivity.databaseController.getEncKeyFor(fileName),
                         userPublicKey, true, context);
 
-        Log.i("addPermissionFor", "encryptionKeyDecrypted.encryptedKey " + encryptionKeyDecrypted.getEncryptedKey());
-        Log.i("addPermissionFor", "encryptionKeyDecrypted.privateKey " + encryptionKeyDecrypted.getPrivateKey());
-        Log.i("addPermissionFor", "encryptionKeyDecrypted.plainKey " + encryptionKeyDecrypted.getDecryptedKey());
+        EncryptionKey encryptionKeyEncrypted = new EncryptionKey(
+                encryptionKeyDecrypted.getDecryptedKey(), userPublicKey, false, context);
 
-        EncryptionKey encryptionKeyEncrypted =
-                new EncryptionKey(encryptionKeyDecrypted.getDecryptedKey(), userPublicKey, false, context);
-
-        Log.i("addPermissionFor", "encryptionKeyEncrypted.plainKey " + encryptionKeyEncrypted.getPlainKey());
-        Log.i("addPermissionFor", "encryptionKeyEncrypted.publicKey " + encryptionKeyEncrypted.getPublicKey());
-        Log.i("addPermissionFor", "encryptionKeyEncrypted.encryptedKey " + encryptionKeyEncrypted.getEncryptedKey());
-
-        database.execSQL("INSERT INTO FileKeys VALUES(" +
-                "'" + encryptionKeyEncrypted.getEncryptedKey() + "', " +
-                "'" + userPublicKey + "', " +
-                "'" + fileName + "', " +
-                "0)");
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("EncKey", encryptionKeyEncrypted.getEncryptedKey());
+        contentValues.put("UserPublicKey", userPublicKey);
+        contentValues.put("File", fileName);
+        contentValues.put("isOwner", 0);
+        database.insert("FileKeys", null, contentValues);
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
                 updateDatabaseFile();
                 Log.i("AsyncTask", "database file updated");
-
+                finished = true;
             }
         });
-        waitToUploadDBFile();
+        customWait();
     }
 
     public String getEncKeyFor(String fileName) {
@@ -287,53 +272,8 @@ public class DatabaseController {
                         "AND File = '" + fileName + "'", null);
         resultSet.moveToFirst();
         Log.i("getEncKeyFor", "EncKey is " + resultSet.getString(0));
-        return resultSet.getString(0);
-    }
-
-    public File getDatabaseFile() {
-        return this.databaseFile;
-    }
-
-
-    public SQLiteDatabase getDatabase() {
-        return this.database;
-    }
-
-    public void printTable(String table) {
-        Log.i("printTable", "Entering printTable");
-        Cursor resultSet;
-        switch (table) {
-            case ("UserAccounts"):
-                Log.i("printTable", "About to print contents of " + table);
-                resultSet = database.rawQuery(
-                        "SELECT * FROM UserAccounts", null);
-                resultSet.moveToFirst();
-                while (!resultSet.isAfterLast()) {
-                    Log.i("printTable_" + table,
-                            resultSet.getString(0) + " | " + resultSet.getString(1) + " | " + resultSet.getString(2));
-                    resultSet.moveToNext();
-                }
-                resultSet.close();
-                Log.i("printTable", "Printed contents of " + table);
-                break;
-
-            case ("FileKeys"):
-                Log.i("printTable", "About to print contents of " + table);
-                resultSet = database.rawQuery(
-                        "SELECT * FROM FileKeys", null);
-                resultSet.moveToFirst();
-                while (!resultSet.isAfterLast()) {
-                    Log.i("printTable_" + table,
-                            resultSet.getString(0) + " | " + resultSet.getString(1) +
-                                    " | " + resultSet.getString(2) + " | " + resultSet.getString(3));
-                    resultSet.moveToNext();
-                }
-                resultSet.close();
-                Log.i("printTable", "Printed contents of " + table);
-                break;
-            default:
-                Log.i("printTable", "No table called " + table);
-
-        }
+        String retString = resultSet.getString(0);
+        resultSet.close();
+        return retString;
     }
 }

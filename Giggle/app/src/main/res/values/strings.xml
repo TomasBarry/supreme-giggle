@@ -6,9 +6,9 @@
     <!-- Main Activity Strings -->
 
     <!-- Text -->
-    <string name="info.device_id">Your ID: %1$s...</string>
-    <string name="info.public_key">Public Key: %1$s...</string>
-    <string name="info.private_key">Private Key: %1$s...</string>
+    <string name="info.device_id">Device ID:<br /> %1$s&#8230;</string>
+    <string name="info.public_key">Public Key: %1$s&#8230;</string>
+    <string name="info.private_key">Private Key: %1$s&#8230;</string>
     <!-- Buttons -->
     <string name="button.label.file_access">Your Files</string>
     <string name="button.label.upload">Upload File</string>
