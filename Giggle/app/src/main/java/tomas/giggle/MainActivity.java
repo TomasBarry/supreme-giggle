@@ -117,7 +117,7 @@ public class MainActivity extends Activity {
         KeyGenerator keyGenerator = new KeyGenerator(this);
 
         Log.i("initializeKeys", "Do keys exist = " + (keyGenerator.getPublicKeyAsString() == null));
-        Log.i("initializeKeys", "Key is " + keyGenerator.getPublicKeyAsString());
+        Log.i("initializeKeys", "Key is {" + keyGenerator.getPublicKeyAsString() + "}");
         if (keyGenerator.getPublicKeyAsString().equals("") || keyGenerator.getPublicKeyAsString() == null) {
             keyGenerator.generateKeys();
             Log.i("initializeKeys", "New keys generated");
