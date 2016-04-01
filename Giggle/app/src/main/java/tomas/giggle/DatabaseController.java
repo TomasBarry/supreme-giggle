@@ -144,9 +144,10 @@ public class DatabaseController {
     }
 
     public String[] getFilesOnServer() {
-        Log.i("getFilesFor", "Getting all files on server");
+        Log.i("getFilesFor", "Getting all files on server available to " + new KeyGenerator(context).getPublicKeyAsString());
         Cursor resultSet = database.rawQuery(
-                "SELECT DISTINCT File FROM FileKeys", null);
+                "SELECT DISTINCT File FROM FileKeys " +
+                        "WHERE UserPublicKey = '" + new KeyGenerator(context).getPublicKeyAsString() + "'", null);
         String[] fileNames = new String[resultSet.getCount()];
         resultSet.moveToFirst();
         int i = 0;
@@ -282,7 +283,7 @@ public class DatabaseController {
         Log.i("getEncKeyFor", "Begining to get EncKey for file " + fileName);
         Cursor resultSet =
                 database.rawQuery("SELECT EncKey FROM FileKeys " +
-                        "WHERE isOwner = 1 " +
+                        "WHERE UserPublicKey = '" + new KeyGenerator(context).getPublicKeyAsString() + "' " +
                         "AND File = '" + fileName + "'", null);
         resultSet.moveToFirst();
         Log.i("getEncKeyFor", "EncKey is " + resultSet.getString(0));

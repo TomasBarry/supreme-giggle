@@ -168,3 +168,43 @@ AgMBAAE=
 -- rgIyOcW3nCpBAhEA1Fe59oLx8OvVb29r1FwBgQIQU4FMR4CyKLh25ecGYe/ngQIRAJYt4XFOlWzu
 -- bsrcg+fyloECEFI6Ki14Okf8N9vxlpsO0e8=
 -- '
+
+
+
+
+
+DROP TABLE UserAccounts;
+DROP TABLE FileKeys;
+
+CREATE TABLE UserAccounts (
+	UserPublicKey  Char(300) PRIMARY KEY,
+	UniqueDeviceID Char(300),
+	UserName       Char(50)
+);
+
+CREATE TABLE FileKeys (
+	EncKey        Char(300) PRIMARY KEY,
+	UserPublicKey Char(300),
+	File          Char(100),
+	isOwner       Int
+);
+
+-- ########################################################################## --
+-- USERS
+-- ########################################################################## --
+INSERT INTO UserAccounts VALUES (
+	'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9Fm+wkoClf9TzGQLLoi3bK8SuaPJ
+AgMBAAE=
+    ',
+	'ffffffff-b1c4-d360-9bfd-10ce37b353d5',
+	'Tomas Barry'
+);
+
+
+INSERT INTO UserAccounts VALUES (
+	'MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKJyiFBCFzl2Jd9m9Fm+wkoClf9TzGQLLoi3bK8SuaPJ
+AgMBAAE=
+    ',
+	'ffffffff-b1c4-d360-9bfd-10ce37b353d5',
+	'Jake Baldwin'
+);

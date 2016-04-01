@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 public class DropboxCommunicator {
@@ -77,7 +78,7 @@ public class DropboxCommunicator {
 
             Log.i("plas", "New Enc Key {" + this.encKey + "}");
 
-            SecretKeySpec secretKeySpec =
+            SecretKey secretKeySpec =
                     new SecretKeySpec(new Base64Translator(context).toBinary(key), "AES");
             Cipher c = Cipher.getInstance("AES");
             c.init(Cipher.ENCRYPT_MODE, secretKeySpec);
@@ -97,7 +98,7 @@ public class DropboxCommunicator {
         Log.i("decryptFile", "About to decrypt the file " + f.getName());
         try {
             byte[] encryptedBytes = fileToBytes(f);
-
+            Log.i("plas", "Encrypted file bytes length on rec " + new Base64Translator(context).fromBinary(fileToBytes(f)).length());
             Log.i("plas", "Encrypted file bytes {" + new Base64Translator(context).fromBinary(encryptedBytes) + "}");
 
             String key = MainActivity.databaseController.getEncKeyFor(fileName);
@@ -116,7 +117,7 @@ public class DropboxCommunicator {
             Log.i("plas", "Decrypted keys equal " + (decryptedKey.equals(encryptionKey.getDecryptedKey())) + "");
 
 
-            SecretKeySpec secretKeySpec =
+            SecretKey secretKeySpec =
                     new SecretKeySpec(new Base64Translator(context).toBinary(decryptedKey), "AES");
             Cipher c = Cipher.getInstance("AES");
             c.init(Cipher.DECRYPT_MODE, secretKeySpec);
@@ -158,6 +159,7 @@ public class DropboxCommunicator {
                     DropboxAPI.Entry response = MainActivity.mDBApi.putFile(f.getName(), inputStream,
                             f.length(), null, null);
                     Log.i("uploadFile", "The uploaded file's rev is: " + response.rev);
+                    Log.i("plas", "The uploaded file's length is: " + f.length());
                 } catch (Exception e) {
                     Log.e("uploadFile", e.toString(), e);
                 }
@@ -167,6 +169,13 @@ public class DropboxCommunicator {
         // Add keys to table :D
         MainActivity.databaseController.addFileEntryIntoFileKeys(this.encKey, new KeyGenerator(context).getPublicKeyAsString(), f.getName(), 1);
         Log.i("uploadFile", "Finished uploading file");
+        try {
+            Thread.sleep(5000);
+        }
+        catch (Exception e) {
+
+        }
+        Log.i("plas", "The uploaded file's length is conv: " + new Base64Translator(context).fromBinary(fileToBytes(f)).length());
     }
 
     public Bitmap downloadFile(String fName, String pKey) {
@@ -188,6 +197,7 @@ public class DropboxCommunicator {
                     Log.i("downloadFile", "The file's rev is: " + info.getMetadata().rev);
                     Log.i("plas", "Filled Encrypted file length = " + encryptedFile.length());
                     decrypted = true;
+                    Log.i("plas", "Filled Encrypted file length = " + encryptedFile.length());
 
                 } catch (Exception e) {
                     Log.e("downloadFile", e.toString(), e);
@@ -227,7 +237,7 @@ public class DropboxCommunicator {
                 Log.i("waitForFile", "Waiting while its empty");
             }
             Log.i("gonna sleep", "for a long time");
-            Thread.sleep(10000);
+            Thread.sleep(20000);
             Log.i("plas", "Waiting and is after " + this.encryptedFile.length());
         } catch (Exception e) {
             Log.e("waitForFile", e.toString(), e);

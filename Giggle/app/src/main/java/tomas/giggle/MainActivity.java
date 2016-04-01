@@ -70,7 +70,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.main);
         Log.i("MainActivity", "onCreate for MainActivity started");
 
-        getPermissions();
+//        getPermissions();
 //        waitForPermissions();
         connectToDropBox();
         initializeDeviceId();
@@ -84,7 +84,7 @@ public class MainActivity extends Activity {
         Log.i("waitForPermissions", "About to wait for permissions");
         try {
             while (!hasPermissions) {
-                Thread.sleep(250)   ;
+                Thread.sleep(250);
                 Log.i("waitForPermissions", "Waiting");
             }
         } catch (Exception e) {

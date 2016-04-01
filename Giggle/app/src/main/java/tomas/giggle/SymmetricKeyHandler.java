@@ -14,7 +14,7 @@ public class SymmetricKeyHandler {
 
     private Context context;
     private SecretKey secretKey;
-    private SecretKeySpec secretKeySpec;
+    private SecretKey secretKeySpec;
 
     private byte [] binaryDataKey;
 
@@ -35,7 +35,7 @@ public class SymmetricKeyHandler {
             javax.crypto.KeyGenerator keyGen = javax.crypto.KeyGenerator.getInstance("AES");
             keyGen.init(128);
             SecretKey sessionKey = keyGen.generateKey();
-            SecretKeySpec secretKeySpec = new SecretKeySpec(sessionKey.getEncoded(), "AES");
+            SecretKey secretKeySpec = new SecretKeySpec(sessionKey.getEncoded(), "AES");
 
             // 2. Encrypt the session key with the RSA public key
             Cipher rsaCipher = Cipher.getInstance("RSA");
@@ -57,7 +57,7 @@ public class SymmetricKeyHandler {
         return binaryDataKey;
     }
 
-    public SecretKeySpec getSecretKeySpec() {
+    public SecretKey getSecretKeySpec() {
         return secretKeySpec;
     }
 }
