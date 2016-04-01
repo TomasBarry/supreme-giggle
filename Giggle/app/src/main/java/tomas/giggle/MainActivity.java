@@ -1,9 +1,15 @@
 package tomas.giggle;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +21,7 @@ import com.dropbox.client2.session.AppKeyPair;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
 
 public class MainActivity extends Activity {
 
@@ -45,18 +52,45 @@ public class MainActivity extends Activity {
     private final static String APP_SECRET = SecretConstants.APP_SECRET;
     private String accessToken = null;
 
+    private boolean hasPermissions;
+
+    private String[] neededPermissions = {
+            Manifest.permission.INTERNET,
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.MANAGE_DOCUMENTS,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+    };
+
+    private final int REQUEST_CODE_ASK_PERMISSIONS = 81;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         Log.i("MainActivity", "onCreate for MainActivity started");
+
+        getPermissions();
+//        waitForPermissions();
         connectToDropBox();
         initializeDeviceId();
         initializeKeys();
         initializeTextViews();
         initializeButtons();
         Log.i("MainActivity", "onCreate for MainActivity finished");
+    }
+
+    private void waitForPermissions() {
+        Log.i("waitForPermissions", "About to wait for permissions");
+        try {
+            while (!hasPermissions) {
+                Thread.sleep(250)   ;
+                Log.i("waitForPermissions", "Waiting");
+            }
+        } catch (Exception e) {
+            Log.e("waitForPermissions", e.toString(), e);
+        }
+        Log.i("waitForPermissions", "Have permissions");
     }
 
     private void waitToGetBack(String s) {
@@ -121,7 +155,9 @@ public class MainActivity extends Activity {
         Log.i("initializeKeys", "Initializing keys");
         KeyGenerator keyGenerator = new KeyGenerator(this);
 
-        if (keyGenerator.getPublicKeyAsString() == null) {
+        Log.i("initializeKeys", "Do keys exist = " + (keyGenerator.getPublicKeyAsString() == null));
+        Log.i("initializeKeys", "Key is " + keyGenerator.getPublicKeyAsString());
+        if (keyGenerator.getPublicKeyAsString().equals("") || keyGenerator.getPublicKeyAsString() == null) {
             keyGenerator.generateKeys();
             Log.i("initializeKeys", "New keys generated");
         }
@@ -186,6 +222,7 @@ public class MainActivity extends Activity {
                 databaseController = new DatabaseController(this);
                 Log.i("onResumeMA", "databaseControllerObject created");
                 if (!databaseController.checkIfValidUser(deviceIdString, publicKeyAsString)) {
+                    Log.i("onResume", "Device ID:{" + deviceIdString + "}. Pub Key: {" + publicKeyAsString + "}");
                     finish();
                 }
             } catch (IllegalStateException e) {
@@ -193,4 +230,93 @@ public class MainActivity extends Activity {
             }
         }
     }
+
+    /**
+     * getPermissions
+     * <p/>
+     * checks if an app has the needed permissions and updates 'hasPermissions' accordingly. If this is run
+     * on a pre API 23 device it will just set 'hasPermissions' to true. If run on an API 23 device onwards, this
+     * method will open the runtime permission request windows if permissions are missing. If permissions are
+     * permanently denied displays a warning.
+     */
+    private void getPermissions() {
+        boolean needToShowRationale = false; //is there any permission that has been permanently denied / first time
+        ArrayList<String> neededPerms = new ArrayList<String>(); //list of not-granted permissions
+        for (String currentPermission : neededPermissions) {//go through all possible permissions
+            //get current permission state for this permission
+            int hasThisPermission = ContextCompat.checkSelfPermission(MainActivity.this,
+                    currentPermission);
+            if (hasThisPermission != PackageManager.PERMISSION_GRANTED) {
+                neededPerms.add(currentPermission);
+                //is this permission permanently denied / first time ask
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                        currentPermission)) {
+                    needToShowRationale = true;
+                }
+            }
+        }
+        //if list is empty, no needed permissions, ie all permissions already granted
+        if (neededPerms.size() <= 0) {
+            hasPermissions = true;
+            return;
+        }
+        final String[] permissionList = neededPerms.toArray(new String[1]);
+        if (needToShowRationale) {
+            //make message box explaining reason these permissions are needed, opens permission box if 'ok' pressed
+            showMessageOKCancel("Please allow access to all these functions",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    permissionList,
+                                    REQUEST_CODE_ASK_PERMISSIONS);
+                        }
+                    }
+            );
+        } else { //not all permissions granted, but none permanently denied
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    permissionList,
+                    REQUEST_CODE_ASK_PERMISSIONS);
+        }
+    }
+
+    /**
+     * onRequestPermissionResult
+     * <p/>
+     * The callback return method when a "Request Permission" dialog window closes.
+     *
+     * @param requestCode  : the code passed on the dialog window's creation
+     * @param permissions  : the list of permissions passed to the dialog window on it's creation
+     * @param grantResults : the resulting state of the permissions in the previous parameter
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE_ASK_PERMISSIONS:
+                //go through all permission statuses, if any still denied mark hasPermissions = false
+                for (Integer result : grantResults) {
+                    if (result != PackageManager.PERMISSION_GRANTED) {
+                        hasPermissions = false;
+                        return;
+                    }
+                }
+                hasPermissions = true;
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+
+    //Used to create a dialog window to display a warning when permissions are permanently denied.
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(MainActivity.this)
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setNegativeButton("Cancel", null)
+                .create()
+                .show();
+    }
+
+
 }

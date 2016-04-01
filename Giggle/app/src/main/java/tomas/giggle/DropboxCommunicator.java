@@ -113,6 +113,8 @@ public class DropboxCommunicator {
             String decryptedKey = encryptionKey.getDecryptedKey();
 
             Log.i("plas", "Decrypted key {" + decryptedKey + "}");
+            Log.i("plas", "Decrypted keys equal " + (decryptedKey.equals(encryptionKey.getDecryptedKey())) + "");
+
 
             SecretKeySpec secretKeySpec =
                     new SecretKeySpec(new Base64Translator(context).toBinary(decryptedKey), "AES");
