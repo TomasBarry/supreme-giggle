@@ -15,7 +15,9 @@ import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.session.AppKeyPair;
 
+
 public class MainActivity extends Activity {
+
 
     public static DropboxAPI<AndroidAuthSession> mDBApi;
 
@@ -23,6 +25,7 @@ public class MainActivity extends Activity {
     private String deviceIdString;
 
     public static DatabaseController databaseController;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +38,7 @@ public class MainActivity extends Activity {
         initializeTextViews();
         Log.i("MainActivity", "onCreate for MainActivity finished");
     }
+
 
     /**
      * Handler to copy text to clipboard on users device. Called when user taps on device Id, public
@@ -144,6 +148,7 @@ public class MainActivity extends Activity {
                 kg.getPrivateKeyAsString().substring(0, 20)));
         Log.i("initializeTextViews", "Initialized text views");
     }
+
 
     protected void onResume() {
         super.onResume();

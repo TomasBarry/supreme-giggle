@@ -10,21 +10,25 @@ import java.security.PublicKey;
 
 import javax.crypto.Cipher;
 
-/**
- * Created by Tomas on 29/03/2016.
- */
+
 public class EncryptionKey {
+
 
     private String plainKey;
     private String encryptedKey;
     private String publicKey;
     private String privateKey;
     private String decryptedKey;
-
-    private boolean isEncrypted;
-
     private Context context;
 
+    /**
+     * constructor
+     *
+     * @param key:         the key
+     * @param userKey:     the users public key
+     * @param isEncrypted: whether the key is encrypted or not
+     * @param context:     the context
+     */
     public EncryptionKey(String key, String userKey, boolean isEncrypted, Context context) {
         Log.i("EncryptionKey", "Beginning constructor where isEncrypted is " + isEncrypted);
 
@@ -41,6 +45,13 @@ public class EncryptionKey {
         Log.i("EncryptionKey", "Finsihed constructor");
     }
 
+
+    /**
+     * encrypt a plain key
+     *
+     * @param plainKey:  the plain key to encrypt
+     * @param publicKey: the public key of the user
+     */
     private void encryptKey(String plainKey, String publicKey) {
         Log.i("encryptKey", "About to encrypt " + plainKey + " with " + publicKey);
         this.plainKey = plainKey;
@@ -51,7 +62,7 @@ public class EncryptionKey {
 
         PublicKey key = new KeyGenerator(context).generateKeyFromString(publicKey);
 
-        byte [] transKeyBinary = Base64.decode(plainKey, Base64.DEFAULT);
+        byte[] transKeyBinary = Base64.decode(plainKey, Base64.DEFAULT);
         byte[] encryptedBytes;
         try {
             Cipher cipher = Cipher.getInstance("RSA");
@@ -65,6 +76,13 @@ public class EncryptionKey {
         Log.i("encryptKey", "Finished encrypting key");
     }
 
+
+    /**
+     * decrypt the encrypted key
+     *
+     * @param encryptedKey: the encrypted key
+     * @param privateKey:   the private key of the user
+     */
     private void decryptKey(String encryptedKey, String privateKey) {
         Log.i("decryptKey", "About to decrypt " + encryptedKey + " with " + privateKey);
         this.encryptedKey = encryptedKey;
@@ -73,28 +91,33 @@ public class EncryptionKey {
         PrivateKey key = new KeyGenerator(context).getPrivateKey();
         PrivateKey key1 = new KeyGenerator(context).getPrivateKey();
         Log.i("encryptKey", "Are the keys equal: " + key.equals(key1));
-        byte [] transKeyBinary = Base64.decode(encryptedKey, Base64.DEFAULT);
-        byte [] decryptedBytes;
+        byte[] transKeyBinary = Base64.decode(encryptedKey, Base64.DEFAULT);
+        byte[] decryptedBytes;
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, key);
             decryptedBytes = cipher.doFinal(transKeyBinary);
             this.decryptedKey = Base64.encodeToString(decryptedBytes, Base64.DEFAULT);
             Log.i("decryptKey", "Decrypted Key: " + decryptedKey);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.e("decryptKey", e.toString(), e);
         }
         Log.i("decryptKey", "Finished decrypting key");
     }
 
+
+    // GETTERS
+
+
     public String getPlainKey() {
         return plainKey;
     }
 
+
     public String getEncryptedKey() {
         return encryptedKey;
     }
+
 
     public String getDecryptedKey() {
         return decryptedKey;
@@ -103,6 +126,7 @@ public class EncryptionKey {
     public String getPublicKey() {
         return publicKey;
     }
+
 
     public String getPrivateKey() {
         return privateKey;

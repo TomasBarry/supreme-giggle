@@ -9,13 +9,21 @@ import java.util.UUID;
 
 public class DeviceId {
 
+
     private String deviceIdString;
     private Context context;
 
+
+    /**
+     * constructor
+     *
+     * @param context: the context
+     */
     public DeviceId(Context context) {
         this.context = context;
         this.deviceIdString = getUniqueAndroidDeviceId();
     }
+
 
     /**
      * getUniqueAndroidDeviceId
@@ -41,6 +49,12 @@ public class DeviceId {
         return deviceUuid.toString();
     }
 
+
+    /**
+     * return the users device ID
+     *
+     * @return the users device ID as a String
+     */
     public String getDeviceIdString() {
         return this.deviceIdString;
     }

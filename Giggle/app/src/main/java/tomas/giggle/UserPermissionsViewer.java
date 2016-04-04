@@ -9,11 +9,14 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+
 public class UserPermissionsViewer extends Activity {
+
 
     private String fileNameString;
     private DatabaseController dbc = MainActivity.databaseController;
 
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

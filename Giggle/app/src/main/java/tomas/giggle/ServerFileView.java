@@ -13,9 +13,11 @@ import android.widget.ListView;
 
 public class ServerFileView extends Activity {
 
+
     private String[] fileNamesOnServer;
     private String action;
     private DatabaseController dbc = MainActivity.databaseController;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +41,7 @@ public class ServerFileView extends Activity {
         }
         Log.i("onCreate_SFV", "Ending on create");
     }
+
 
     public void downloadHandler() {
         Log.i("downloadHandler", "Beginning download handler");
@@ -64,6 +67,7 @@ public class ServerFileView extends Activity {
         Log.i("downloadHandler", "Ending download handler");
     }
 
+
     public void uploadHandler() {
         Log.i("uploadHandler", "Beginnig upload handler");
         Intent intent = new Intent(Intent.ACTION_PICK,
@@ -72,12 +76,14 @@ public class ServerFileView extends Activity {
         Log.i("uploadHandler", "Ending upload handler");
     }
 
+
     public void downloadFile(String fileName) {
         Log.i("goToActionView", "User wants to " + this.action + " a file called " + fileName);
         Intent i = new Intent(this, DownloadFileActivity.class);
         i.putExtra("fileName", fileName);
         startActivity(i);
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

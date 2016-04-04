@@ -46,6 +46,11 @@ public class ConfirmActivity extends Activity {
         finish();
     }
 
+    /**
+     * Gets the path to a file from the URI path of the file
+     * @param uri: the uri path
+     * @return: the path to the file on the local device
+     */
     public String getRealPathFromURI(Uri uri) {
         Log.i("getRealPathFromURI", "About to get real path");
         Cursor cursor = this.getContentResolver().query(uri, null, null, null, null);

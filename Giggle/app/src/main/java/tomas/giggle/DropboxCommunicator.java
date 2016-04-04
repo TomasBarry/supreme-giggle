@@ -17,7 +17,9 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+
 public class DropboxCommunicator {
+
 
     private Context context;
     private String encKey;
@@ -27,10 +29,23 @@ public class DropboxCommunicator {
     private boolean decrypted = false;
     private boolean finished = false;
 
+
+    /**
+     * Constructor
+     *
+     * @param context: the context
+     */
     public DropboxCommunicator(Context context) {
         this.context = context;
     }
 
+
+    /**
+     * convert a file to an array of bytes
+     *
+     * @param f: the file
+     * @return the file as an array of bytes
+     */
     public byte[] fileToBytes(File f) {
         try {
             byte[] plainFileBytes = new byte[(int) f.length()];
@@ -42,6 +57,14 @@ public class DropboxCommunicator {
         return null;
     }
 
+
+    /**
+     * convert an array of bytes to a file
+     *
+     * @param bytes:    the array of bytes
+     * @param fileName: the name of the file to create
+     * @return the file
+     */
     public File bytesToFile(byte[] bytes, String fileName) {
         Log.i("bytesToFile", "About to put bytes into file called " + fileName);
         try {
@@ -58,23 +81,24 @@ public class DropboxCommunicator {
         return null;
     }
 
+
+    /**
+     * encrypt a file using AES
+     *
+     * @param fileName:   the name of the file
+     * @param fileBytes:  the file as an array of bytes
+     * @param keyHandler: a key handler object to encrypt the file
+     * @return the encrypted File object
+     */
     public File encryptFile(String fileName, byte[] fileBytes, SymmetricKeyHandler keyHandler) {
         Log.i("encryptFile", "About to encrypt the file " + fileName);
         try {
             String key = Base64.encodeToString(keyHandler.getBinaryDataKey(), Base64.DEFAULT);
 
-            Log.i("plas", "New Plain Key {" + key + "}");
-
             EncryptionKey encryptionKey =
                     new EncryptionKey(key, new KeyGenerator(context).getPublicKeyAsString(), false, context);
 
-            Log.i("encryptFile", "encrypted " + encryptionKey.getEncryptedKey());
-            Log.i("encryptFile", "plain " + encryptionKey.getPlainKey());
-            Log.i("encryptFile", "public " + encryptionKey.getPublicKey());
-
             this.encKey = encryptionKey.getEncryptedKey();
-
-            Log.i("plas", "New Enc Key {" + this.encKey + "}");
 
             SecretKey secretKeySpec =
                     new SecretKeySpec(Base64.decode(key, Base64.DEFAULT), "AES");
@@ -92,27 +116,26 @@ public class DropboxCommunicator {
         return null;
     }
 
+
+    /**
+     * decrypt a file using AES
+     *
+     * @param f:         the file to decrypt
+     * @param publicKey: the users public key
+     * @param fileName:  the name of the file to create
+     * @return the decrypted file
+     */
     public File decryptFile(File f, String publicKey, String fileName) {
         Log.i("decryptFile", "About to decrypt the file " + f.getName());
         try {
             byte[] encryptedBytes = fileToBytes(f);
-            Log.i("plas", "Encrypted file bytes length on rec " + Base64.encodeToString(fileToBytes(f), Base64.DEFAULT));
 
             String key = MainActivity.databaseController.getEncKeyFor(fileName);
 
-            Log.i("plas", "Encrpyted key {" + key + "}");
-
             EncryptionKey encryptionKey =
                     new EncryptionKey(key, new KeyGenerator(context).getPublicKeyAsString(), true, context);
-            Log.i("encryptFile", "encrypted " + encryptionKey.getEncryptedKey());
-            Log.i("encryptFile", "decrypted " + encryptionKey.getDecryptedKey());
-            Log.i("encryptFile", "private " + encryptionKey.getPrivateKey());
 
             String decryptedKey = encryptionKey.getDecryptedKey();
-
-            Log.i("plas", "Decrypted key {" + decryptedKey + "}");
-            Log.i("plas", "Decrypted keys equal " + (decryptedKey.equals(encryptionKey.getDecryptedKey())) + "");
-
 
             SecretKey secretKeySpec =
                     new SecretKeySpec(Base64.decode(decryptedKey, Base64.DEFAULT), "AES");
@@ -130,6 +153,13 @@ public class DropboxCommunicator {
         return null;
     }
 
+
+    /**
+     * upload a file to Dropbox
+     *
+     * @param path: the path to the file to upload
+     * @throws InterruptedException
+     */
     public void uploadFile(String path) throws InterruptedException {
         Log.i("uploadFile", "About to upload file at " + path);
         File plainFile = new File(path);
@@ -148,7 +178,6 @@ public class DropboxCommunicator {
                     DropboxAPI.Entry response = MainActivity.mDBApi.putFile(f.getName(), inputStream,
                             f.length(), null, null);
                     Log.i("uploadFile", "The uploaded file's rev is: " + response.rev);
-                    Log.i("plas", "The uploaded file's length is: " + f.length());
                 } catch (Exception e) {
                     Log.e("uploadFile", e.toString(), e);
                 }
@@ -161,6 +190,12 @@ public class DropboxCommunicator {
         Log.i("uploadFile", "Finished uploading file");
     }
 
+
+    /**
+     * wait for an event to occur
+     *
+     * @throws InterruptedException
+     */
     private void customWait() throws InterruptedException {
         while (!finished) {
             Thread.sleep(1);
@@ -168,6 +203,15 @@ public class DropboxCommunicator {
         finished = false;
     }
 
+
+    /**
+     * download a file from Dropbox
+     *
+     * @param fName: the name of the file
+     * @param pKey:  the public ke of the user
+     * @return a Bitmap for the downloaded image
+     * @throws InterruptedException
+     */
     public Bitmap downloadFile(String fName, String pKey) throws InterruptedException {
         Log.i("downloadFile", "About to download file " + fName);
         final String fileName = fName;
@@ -177,14 +221,11 @@ public class DropboxCommunicator {
                 try {
                     encryptedFile = File.createTempFile(fileName, "");
                     encryptedFile.deleteOnExit();
-                    Log.i("plas", "Empty Encrypted file length = " + encryptedFile.length());
                     FileOutputStream outputStream = new FileOutputStream(encryptedFile);
                     DropboxAPI.DropboxFileInfo info =
                             MainActivity.mDBApi.getFile(fileName, null, outputStream, null);
                     Log.i("downloadFile", "The file's rev is: " + info.getMetadata().rev);
-                    Log.i("plas", "Filled Encrypted file length = " + encryptedFile.length());
                     finished = true;
-                    Log.i("plas", "Filled Encrypted file length = " + encryptedFile.length());
                 } catch (Exception e) {
                     Log.e("downloadFile", e.toString(), e);
                 }

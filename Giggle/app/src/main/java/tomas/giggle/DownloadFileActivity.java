@@ -7,7 +7,9 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+
 public class DownloadFileActivity extends Activity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -16,7 +16,9 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
+
 public class KeyGenerator extends Activity {
+
 
     SharedPreferences SP;
     SharedPreferences.Editor SPE;
@@ -24,11 +26,21 @@ public class KeyGenerator extends Activity {
     PrivateKey privateKey;
     Context context;
 
+
+    /**
+     * Constructor
+     *
+     * @param context: the context
+     */
     public KeyGenerator(Context context) {
         this.context = context;
         SP = context.getSharedPreferences("KeyPair", MODE_PRIVATE);
     }
 
+
+    /**
+     * generate public and private keys
+     */
     public void generateKeys() {
         try {
             KeyPairGenerator generator;
@@ -53,6 +65,11 @@ public class KeyGenerator extends Activity {
     }
 
 
+    /**
+     * get the public key object
+     *
+     * @return the public key object
+     */
     public PublicKey getPublicKey() {
         String pubKeyStr = SP.getString("PublicKey", "");
         byte[] sigBytes = Base64.decode(pubKeyStr, Base64.DEFAULT);
@@ -72,11 +89,22 @@ public class KeyGenerator extends Activity {
         return null;
     }
 
+
+    /**
+     * get the public key as a string
+     *
+     * @return the public key as a string
+     */
     public String getPublicKeyAsString() {
         return SP.getString("PublicKey", "");
     }
 
 
+    /**
+     * get the private key object
+     *
+     * @return the private key object
+     */
     public PrivateKey getPrivateKey() {
         String privKeyStr = SP.getString("PrivateKey", "");
         byte[] sigBytes = Base64.decode(privKeyStr, Base64.DEFAULT);
@@ -96,6 +124,13 @@ public class KeyGenerator extends Activity {
         return null;
     }
 
+
+    /**
+     * generate a public key object from a string
+     *
+     * @param key: the public key string
+     * @return a public key object
+     */
     public PublicKey generateKeyFromString(String key) {
         Log.i("generateKeyFromString", "About to generate PublicKey object from " + key);
         try {
@@ -112,6 +147,11 @@ public class KeyGenerator extends Activity {
     }
 
 
+    /**
+     * get the private key as a string
+     *
+     * @return the string of the private key
+     */
     public String getPrivateKeyAsString() {
         return SP.getString("PrivateKey", "");
     }

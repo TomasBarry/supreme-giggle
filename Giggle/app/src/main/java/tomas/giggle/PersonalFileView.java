@@ -12,8 +12,10 @@ import android.widget.ListView;
 
 public class PersonalFileView extends Activity {
 
+
     private String[] fileNamesForUser;
     private DatabaseController dbc = MainActivity.databaseController;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,7 @@ public class PersonalFileView extends Activity {
         );
         Log.i("onCreate_PFV", "Ending on create");
     }
+
 
     public void goToPermsView(String fileName) {
         Intent i = new Intent(this, UserPermissionsViewer.class);

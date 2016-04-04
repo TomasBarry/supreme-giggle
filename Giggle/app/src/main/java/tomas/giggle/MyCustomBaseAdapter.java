@@ -12,13 +12,24 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+
 public class MyCustomBaseAdapter extends BaseAdapter {
+
+
     private ArrayList<UserPermission> usersAndPerms;
 
     private LayoutInflater mInflater;
     private String fileName;
     private DatabaseController dbc = MainActivity.databaseController;
 
+
+    /**
+     * Constructor
+     *
+     * @param context: the context
+     * @param results: the list of objects to make the adapter for
+     * @param fileName: the file name
+     */
     public MyCustomBaseAdapter(Context context, ArrayList<UserPermission> results, String fileName) {
         this.usersAndPerms = results;
         this.mInflater = LayoutInflater.from(context);

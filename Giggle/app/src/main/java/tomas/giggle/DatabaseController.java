@@ -14,13 +14,22 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Hashtable;
 
+
 public class DatabaseController {
+
 
     private Context context;
     private File databaseFile;
     private SQLiteDatabase database;
     private boolean finished = false;
 
+
+    /**
+     * constructor
+     *
+     * @param con: the context
+     * @throws InterruptedException
+     */
     public DatabaseController(final Context con) throws InterruptedException {
         Log.i("DatabaseController", "Constructor begins");
         this.context = con;
@@ -37,12 +46,19 @@ public class DatabaseController {
         Log.i("DatabaseController", "Constructor ends");
     }
 
+
+    /**
+     * wait for an action to complete
+     *
+     * @throws InterruptedException
+     */
     private void customWait() throws InterruptedException {
         while (!finished) {
             Thread.sleep(1);
         }
         finished = false;
     }
+
 
     /**
      * getAppDatabase
@@ -68,6 +84,10 @@ public class DatabaseController {
         return null;
     }
 
+
+    /**
+     * update the stored database
+     */
     private void updateDatabaseFile() {
         Log.i("updateDatabaseFile", "Updating server app database");
         try {
@@ -80,6 +100,14 @@ public class DatabaseController {
         }
     }
 
+
+    /**
+     * get a hash table of the user names and permissions for a file that a user owns
+     *
+     * @param ownerPublicKey: the public key of the file owner
+     * @param fileName:       the file name
+     * @return the hash table
+     */
     public Hashtable<String, Boolean> getUsersAndPermissionsFor(String ownerPublicKey, String fileName) {
         Log.i("getUsersAndPermsFor", "Getting user and perms for " + fileName);
 
@@ -124,6 +152,12 @@ public class DatabaseController {
         return userNamesWithPerms;
     }
 
+
+    /**
+     * get the files that the user has access to
+     *
+     * @return a list of file names that the user has access to
+     */
     public String[] getFilesOnServer() {
         Log.i("getFilesFor", "Getting all files on server available to "
                 + new KeyGenerator(context).getPublicKeyAsString());
@@ -142,6 +176,13 @@ public class DatabaseController {
         return fileNames;
     }
 
+
+    /**
+     * get a list of the files that the user owns
+     *
+     * @param userPublicKey: the public key of the user
+     * @return a list of file names that the user owns
+     */
     public String[] getFilesFor(String userPublicKey) {
         Log.i("getFilesFor", "Getting files for " + userPublicKey);
         Cursor resultSet = database.rawQuery("SELECT DISTINCT File FROM FileKeys " +
@@ -158,6 +199,16 @@ public class DatabaseController {
         return fileNames;
     }
 
+
+    /**
+     * add an entry to the FileKeys table
+     *
+     * @param encKey:    the encrypted symmetric key
+     * @param publicKey: the public key of the user with access
+     * @param fileName:  the file that has been encrypted
+     * @param isOwner:   whether the user is the owner of the file
+     * @throws InterruptedException
+     */
     public void addFileEntryIntoFileKeys(
             String encKey, String publicKey, String fileName, int isOwner)
             throws InterruptedException {
@@ -181,6 +232,14 @@ public class DatabaseController {
         Log.i("addFileEntryIntoFK", "Added entry");
     }
 
+
+    /**
+     * checks if a given user has been given access to the Dropbox account
+     *
+     * @param deviceId:  the device ID of the user
+     * @param publicKey: the public key of the user
+     * @return true or false
+     */
     public boolean checkIfValidUser(String deviceId, String publicKey) {
         Log.i("checkIfValidUser", "Checking if " + deviceId + " is a valid user");
         Cursor resultSet = database.rawQuery(
@@ -207,6 +266,13 @@ public class DatabaseController {
         return false;
     }
 
+
+    /**
+     * get the public key of a user given their user name
+     *
+     * @param userName: the user name
+     * @return the public key for the user
+     */
     public String getUserKeyFromUserName(String userName) {
         Cursor resultSet = database.rawQuery(
                 "SELECT UserPublicKey FROM UserAccounts WHERE UserName = '" + userName + "'", null);
@@ -216,6 +282,14 @@ public class DatabaseController {
         return retString;
     }
 
+
+    /**
+     * revoke decrypt permissions of a file from a user
+     *
+     * @param userName: the user to revoke permissions for
+     * @param fileName: the file to revoke permissions on
+     * @throws InterruptedException
+     */
     public void revokePermissionsFor(String userName, String fileName) throws InterruptedException {
         Log.i("revokePermissionsFor",
                 "About to revoke permissions for " + userName + " on file " + fileName);
@@ -235,6 +309,14 @@ public class DatabaseController {
         customWait();
     }
 
+
+    /**
+     * Add decrypt permissions for a given file to a given user
+     *
+     * @param userName: the user to give permissions to
+     * @param fileName: the file to give permissions for
+     * @throws InterruptedException
+     */
     public void addPermissionFor(String userName, String fileName) throws InterruptedException {
         Log.i("addPermissionFor",
                 "About to add permissions for " + userName + " on file " + fileName);
@@ -264,6 +346,14 @@ public class DatabaseController {
         customWait();
     }
 
+
+    /**
+     * Gets the encrypted symmetric key for a given file name. The selected key is the one that
+     * the user is able to decrpyt
+     *
+     * @param fileName: the file name to get the encrypted symmetric ket for
+     * @return the encrypted symmetric key
+     */
     public String getEncKeyFor(String fileName) {
         Log.i("getEncKeyFor", "Begining to get EncKey for file " + fileName);
         Cursor resultSet =
